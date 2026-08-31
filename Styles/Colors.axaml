@@ -1,0 +1,54 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Background Colors -->
+    <Color x:Key="AppBgPrimary">#0D0D12</Color>
+    <Color x:Key="AppBgSecondary">#13131A</Color>
+    <Color x:Key="AppBgTertiary">#1A1A24</Color>
+    <Color x:Key="AppBgElevated">#1E1E2A</Color>
+    <Color x:Key="AppBgHover">#252536</Color>
+    <Color x:Key="AppBgSelected">#2A2A3E</Color>
+
+    <!-- Border Colors -->
+    <Color x:Key="AppBorderSubtle">#1F1F30</Color>
+    <Color x:Key="AppBorderDefault">#2A2A40</Color>
+    <Color x:Key="AppBorderFocus">#6366F1</Color>
+
+    <!-- Accent Colors -->
+    <Color x:Key="AccentPrimary">#6366F1</Color>
+    <Color x:Key="AccentPrimaryHover">#818CF8</Color>
+    <Color x:Key="AccentSecondary">#06B6D4</Color>
+    <Color x:Key="AccentSuccess">#22C55E</Color>
+    <Color x:Key="AccentWarning">#F59E0B</Color>
+    <Color x:Key="AccentDanger">#EF4444</Color>
+
+    <!-- Text Colors -->
+    <Color x:Key="TextPrimary">#F1F1F6</Color>
+    <Color x:Key="TextSecondary">#A0A0BC</Color>
+    <Color x:Key="TextTertiary">#6B6B88</Color>
+    <Color x:Key="TextDisabled">#44445A</Color>
+    <Color x:Key="TextAccent">#818CF8</Color>
+
+    <!-- Solid Brushes -->
+    <SolidColorBrush x:Key="BgPrimaryBrush" Color="{StaticResource AppBgPrimary}" />
+    <SolidColorBrush x:Key="BgSecondaryBrush" Color="{StaticResource AppBgSecondary}" />
+    <SolidColorBrush x:Key="BgTertiaryBrush" Color="{StaticResource AppBgTertiary}" />
+    <SolidColorBrush x:Key="BgElevatedBrush" Color="{StaticResource AppBgElevated}" />
+    <SolidColorBrush x:Key="BgHoverBrush" Color="{StaticResource AppBgHover}" />
+    <SolidColorBrush x:Key="BgSelectedBrush" Color="{StaticResource AppBgSelected}" />
+    <SolidColorBrush x:Key="BorderSubtleBrush" Color="{StaticResource AppBorderSubtle}" />
+    <SolidColorBrush x:Key="BorderDefaultBrush" Color="{StaticResource AppBorderDefault}" />
+    <SolidColorBrush x:Key="BorderFocusBrush" Color="{StaticResource AppBorderFocus}" />
+    <SolidColorBrush x:Key="AccentPrimaryBrush" Color="{StaticResource AccentPrimary}" />
+    <SolidColorBrush x:Key="AccentPrimaryHoverBrush" Color="{StaticResource AccentPrimaryHover}" />
+    <SolidColorBrush x:Key="AccentSecondaryBrush" Color="{StaticResource AccentSecondary}" />
+    <SolidColorBrush x:Key="AccentSuccessBrush" Color="{StaticResource AccentSuccess}" />
+    <SolidColorBrush x:Key="AccentWarningBrush" Color="{StaticResource AccentWarning}" />
+    <SolidColorBrush x:Key="AccentDangerBrush" Color="{StaticResource AccentDanger}" />
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimary}" />
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondary}" />
+    <SolidColorBrush x:Key="TextTertiaryBrush" Color="{StaticResource TextTertiary}" />
+    <SolidColorBrush x:Key="TextDisabledBrush" Color="{StaticResource TextDisabled}" />
+    <SolidColorBrush x:Key="TextAccentBrush" Color="{StaticResource TextAccent}" />
+
+</ResourceDictionary>

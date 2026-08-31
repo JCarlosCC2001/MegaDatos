@@ -1,0 +1,48 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="MegaDatos.App"
+             xmlns:local="using:MegaDatos"
+             RequestedThemeVariant="Dark">
+
+    <Application.DataTemplates>
+        <local:ViewLocator />
+    </Application.DataTemplates>
+
+    <Application.Styles>
+        <FluentTheme />
+        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
+        <StyleInclude Source="avares://MegaDatos/Styles/AppTheme.axaml" />
+    </Application.Styles>
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <!-- Background Colors -->
+            <SolidColorBrush x:Key="BgPrimaryBrush" Color="#0D0D12" />
+            <SolidColorBrush x:Key="BgSecondaryBrush" Color="#13131A" />
+            <SolidColorBrush x:Key="BgTertiaryBrush" Color="#1A1A24" />
+            <SolidColorBrush x:Key="BgElevatedBrush" Color="#1E1E2A" />
+            <SolidColorBrush x:Key="BgHoverBrush" Color="#252536" />
+            <SolidColorBrush x:Key="BgSelectedBrush" Color="#2A2A3E" />
+
+            <!-- Border Colors -->
+            <SolidColorBrush x:Key="BorderSubtleBrush" Color="#1F1F30" />
+            <SolidColorBrush x:Key="BorderDefaultBrush" Color="#2A2A40" />
+            <SolidColorBrush x:Key="BorderFocusBrush" Color="#6366F1" />
+
+            <!-- Accent Colors -->
+            <SolidColorBrush x:Key="AccentPrimaryBrush" Color="#6366F1" />
+            <SolidColorBrush x:Key="AccentPrimaryHoverBrush" Color="#818CF8" />
+            <SolidColorBrush x:Key="AccentSecondaryBrush" Color="#06B6D4" />
+            <SolidColorBrush x:Key="AccentSuccessBrush" Color="#22C55E" />
+            <SolidColorBrush x:Key="AccentWarningBrush" Color="#F59E0B" />
+            <SolidColorBrush x:Key="AccentDangerBrush" Color="#EF4444" />
+
+            <!-- Text Colors -->
+            <SolidColorBrush x:Key="TextPrimaryBrush" Color="#F1F1F6" />
+            <SolidColorBrush x:Key="TextSecondaryBrush" Color="#A0A0BC" />
+            <SolidColorBrush x:Key="TextTertiaryBrush" Color="#6B6B88" />
+            <SolidColorBrush x:Key="TextDisabledBrush" Color="#44445A" />
+            <SolidColorBrush x:Key="TextAccentBrush" Color="#818CF8" />
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

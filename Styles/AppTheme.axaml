@@ -1,0 +1,193 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ===== Global Font (Antigravity Typography) ===== -->
+    <Style Selector="TemplatedControl">
+        <Setter Property="FontFamily" Value="Inter, Segoe UI, -apple-system, BlinkMacSystemFont, sans-serif" />
+    </Style>
+
+    <Style Selector="TextBlock">
+        <Setter Property="FontFamily" Value="Inter, Segoe UI, -apple-system, BlinkMacSystemFont, sans-serif" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    </Style>
+
+    <!-- ===== Sidebar Button ===== -->
+    <Style Selector="Button.sidebar-btn">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="Padding" Value="16,10" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="FontSize" Value="12.5" />
+        <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style Selector="Button.sidebar-btn:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource BgHoverBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    </Style>
+    <Style Selector="Button.sidebar-btn.active">
+        <Setter Property="Background" Value="{DynamicResource BgSelectedBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextAccentBrush}" />
+    </Style>
+    <Style Selector="Button.sidebar-btn.active /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource BgSelectedBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextAccentBrush}" />
+    </Style>
+
+    <!-- ===== Activity Bar Button ===== -->
+    <Style Selector="Button.activity-btn">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+        <Setter Property="Width" Value="48" />
+        <Setter Property="Height" Value="48" />
+        <Setter Property="CornerRadius" Value="0" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="FontSize" Value="18" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.activity-btn:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource BgHoverBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    </Style>
+    <Style Selector="Button.activity-btn.active">
+        <Setter Property="Foreground" Value="{DynamicResource TextAccentBrush}" />
+        <Setter Property="Background" Value="{DynamicResource BgSelectedBrush}" />
+    </Style>
+    <Style Selector="Button.activity-btn.active /template/ ContentPresenter">
+        <Setter Property="Foreground" Value="{DynamicResource TextAccentBrush}" />
+        <Setter Property="Background" Value="{DynamicResource BgSelectedBrush}" />
+    </Style>
+
+    <!-- ===== Toolbar Button ===== -->
+    <Style Selector="Button.toolbar-btn">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+        <Setter Property="Padding" Value="10,6" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style Selector="Button.toolbar-btn:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource BgHoverBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    </Style>
+
+    <!-- ===== Action Button (Accent) ===== -->
+    <Style Selector="Button.action-btn">
+        <Setter Property="Background" Value="{DynamicResource AccentPrimaryBrush}" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Padding" Value="16,8" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style Selector="Button.action-btn:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource AccentPrimaryHoverBrush}" />
+    </Style>
+
+    <!-- ===== Danger Button ===== -->
+    <Style Selector="Button.danger-btn">
+        <Setter Property="Background" Value="{DynamicResource AccentDangerBrush}" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Padding" Value="16,8" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Cursor" Value="Hand" />
+    </Style>
+
+    <!-- ===== DataGrid Styling ===== -->
+    <Style Selector="DataGrid">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="RowBackground" Value="Transparent" />
+
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="GridLinesVisibility" Value="Horizontal" />
+        <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource BorderSubtleBrush}" />
+        <Setter Property="FontSize" Value="12" />
+    </Style>
+    <Style Selector="DataGridColumnHeader">
+        <Setter Property="Background" Value="{DynamicResource BgTertiaryBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Padding" Value="12,8" />
+    </Style>
+    <Style Selector="DataGridRow:pointerover /template/ Rectangle#BackgroundRectangle">
+        <Setter Property="Fill" Value="{DynamicResource BgHoverBrush}" />
+    </Style>
+    <Style Selector="DataGridRow:selected /template/ Rectangle#BackgroundRectangle">
+        <Setter Property="Fill" Value="{DynamicResource BgSelectedBrush}" />
+    </Style>
+
+    <Style Selector="TreeViewItem">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+    </Style>
+    <Style Selector="TreeViewItem:selected /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="{DynamicResource BgSelectedBrush}" />
+    </Style>
+    <Style Selector="TreeViewItem:pointerover /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="{DynamicResource BgHoverBrush}" />
+    </Style>
+
+    <!-- ===== TextBox (Custom Dark) ===== -->
+    <Style Selector="TextBox.meta-input">
+        <Setter Property="Background" Value="{DynamicResource BgTertiaryBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderDefaultBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Padding" Value="10,7" />
+        <Setter Property="FontSize" Value="12" />
+    </Style>
+    <Style Selector="TextBox.meta-input:focus">
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderFocusBrush}" />
+    </Style>
+
+    <!-- ===== Section Header ===== -->
+    <Style Selector="TextBlock.section-header">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="{DynamicResource TextTertiaryBrush}" />
+        <Setter Property="Margin" Value="0,12,0,6" />
+
+    </Style>
+
+    <!-- ===== Tag/Badge ===== -->
+    <Style Selector="Border.tag">
+        <Setter Property="Background" Value="{DynamicResource BgHoverBrush}" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Padding" Value="8,3" />
+    </Style>
+
+    <!-- ===== Expander ===== -->
+    <Style Selector="Expander">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    </Style>
+
+    <!-- ===== ProgressBar ===== -->
+    <Style Selector="ProgressBar.status-progress">
+        <Setter Property="Height" Value="3" />
+        <Setter Property="Minimum" Value="0" />
+        <Setter Property="Maximum" Value="100" />
+        <Setter Property="Foreground" Value="{DynamicResource AccentPrimaryBrush}" />
+        <Setter Property="Background" Value="{DynamicResource BgTertiaryBrush}" />
+    </Style>
+
+    <!-- ===== ScrollViewer ===== -->
+    <Style Selector="ScrollViewer">
+        <Setter Property="HorizontalScrollBarVisibility" Value="Disabled" />
+    </Style>
+
+</Styles>

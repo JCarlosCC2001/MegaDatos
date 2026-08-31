@@ -1,0 +1,20 @@
+# .NET build directories
+bin/
+obj/
+
+# User-specific files
+*.user
+*.userosscache
+*.sln.docstates
+
+# Visual Studio cache & temporary files
+.vs/
+.vscode/
+.idea/
+
+# Log and output files from runs
+*.log
+error.txt
+output.txt
+run_output.txt
+crash.log
