@@ -9,7 +9,8 @@
         MinWidth="1000" MinHeight="600"
         Background="{DynamicResource BgPrimaryBrush}"
         WindowState="Maximized"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        FontSize="10">
 
     <Design.DataContext>
         <vm:MainViewModel />
@@ -17,22 +18,22 @@
 
     <Window.Resources>
         <DataTemplate x:Key="MetadataEntryTemplate" DataType="models:MetadataEntry">
-            <DockPanel Margin="0,3">
-                <TextBlock DockPanel.Dock="Left" Text="{Binding Key}" FontSize="11.5" Foreground="{DynamicResource TextTertiaryBrush}" Width="95" VerticalAlignment="Center" />
+            <DockPanel Margin="0,1">
+                <TextBlock DockPanel.Dock="Left" Text="{Binding Key}" FontSize="10" Foreground="{DynamicResource TextTertiaryBrush}" Width="75" VerticalAlignment="Center" />
                 <Grid>
                     <!-- ReadOnly Mode -->
-                    <TextBlock IsVisible="{Binding !IsEditable}" Text="{Binding Value}" FontSize="11.5" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" VerticalAlignment="Center" Margin="8,0,0,0" />
+                    <TextBlock IsVisible="{Binding !IsEditable}" Text="{Binding Value}" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" VerticalAlignment="Center" Margin="4,0,0,0" />
                     
                     <!-- Editable Mode -->
                     <Grid IsVisible="{Binding IsEditable}">
                         <!-- TextBox (Default) -->
-                        <TextBox IsVisible="{Binding IsTextEditor}" Text="{Binding Value, Mode=TwoWay}" Classes="meta-input" FontSize="11" Padding="6,4" Background="{DynamicResource BgSecondaryBrush}" BorderThickness="1" BorderBrush="{DynamicResource BorderDefaultBrush}" VerticalAlignment="Center" HorizontalAlignment="Stretch" />
+                        <TextBox IsVisible="{Binding IsTextEditor}" Text="{Binding Value, Mode=TwoWay}" Classes="meta-input" FontSize="10" Padding="4,2" MinHeight="22" Background="{DynamicResource BgSecondaryBrush}" BorderThickness="1" BorderBrush="{DynamicResource BorderDefaultBrush}" VerticalAlignment="Center" HorizontalAlignment="Stretch" />
                         
                         <!-- Date Picker -->
-                        <CalendarDatePicker IsVisible="{Binding IsDateEditor}" SelectedDate="{Binding ValueAsDate, Mode=TwoWay}" Classes="meta-input" FontSize="11" Padding="6,4" Background="{DynamicResource BgSecondaryBrush}" BorderThickness="1" BorderBrush="{DynamicResource BorderDefaultBrush}" VerticalAlignment="Center" HorizontalAlignment="Stretch" />
+                        <CalendarDatePicker IsVisible="{Binding IsDateEditor}" SelectedDate="{Binding ValueAsDate, Mode=TwoWay}" Classes="meta-input" FontSize="10" Padding="4,2" MinHeight="22" Background="{DynamicResource BgSecondaryBrush}" BorderThickness="1" BorderBrush="{DynamicResource BorderDefaultBrush}" VerticalAlignment="Center" HorizontalAlignment="Stretch" />
                         
                         <!-- Rating Picker -->
-                        <ComboBox IsVisible="{Binding IsRatingEditor}" SelectedItem="{Binding Value, Mode=TwoWay}" Classes="meta-input" FontSize="11" Padding="6,4" Background="{DynamicResource BgSecondaryBrush}" BorderThickness="1" BorderBrush="{DynamicResource BorderDefaultBrush}" VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                        <ComboBox IsVisible="{Binding IsRatingEditor}" SelectedItem="{Binding Value, Mode=TwoWay}" Classes="meta-input" FontSize="10" Padding="4,2" MinHeight="22" Background="{DynamicResource BgSecondaryBrush}" BorderThickness="1" BorderBrush="{DynamicResource BorderDefaultBrush}" VerticalAlignment="Center" HorizontalAlignment="Stretch">
                             <x:String>★☆☆☆☆</x:String>
                             <x:String>★★☆☆☆</x:String>
                             <x:String>★★★☆☆</x:String>
@@ -41,20 +42,20 @@
                         </ComboBox>
                         
                         <!-- Choice Picker (ComboBox) -->
-                        <ComboBox IsVisible="{Binding IsChoiceEditor}" ItemsSource="{Binding Choices}" SelectedItem="{Binding Value, Mode=TwoWay}" Classes="meta-input" FontSize="11" Padding="6,4" Background="{DynamicResource BgSecondaryBrush}" BorderThickness="1" BorderBrush="{DynamicResource BorderDefaultBrush}" VerticalAlignment="Center" HorizontalAlignment="Stretch" />
+                        <ComboBox IsVisible="{Binding IsChoiceEditor}" ItemsSource="{Binding Choices}" SelectedItem="{Binding Value, Mode=TwoWay}" Classes="meta-input" FontSize="10" Padding="4,2" MinHeight="22" Background="{DynamicResource BgSecondaryBrush}" BorderThickness="1" BorderBrush="{DynamicResource BorderDefaultBrush}" VerticalAlignment="Center" HorizontalAlignment="Stretch" />
 
                         <!-- GPS Decimal Editor -->
                         <Grid IsVisible="{Binding IsGpsDecimalEditor}" ColumnDefinitions="*,6,50">
-                            <TextBox Grid.Column="0" Text="{Binding DecimalDegreesValue, Mode=TwoWay}" Classes="meta-input" FontSize="11" Padding="6,4" Background="{DynamicResource BgSecondaryBrush}" BorderThickness="1" BorderBrush="{DynamicResource BorderDefaultBrush}" VerticalAlignment="Center" HorizontalAlignment="Stretch" />
-                            <ComboBox Grid.Column="2" ItemsSource="{Binding HemisphereChoices}" SelectedItem="{Binding Hemisphere, Mode=TwoWay}" Classes="meta-input" FontSize="11" Padding="6,4" Background="{DynamicResource BgSecondaryBrush}" BorderThickness="1" BorderBrush="{DynamicResource BorderDefaultBrush}" VerticalAlignment="Center" HorizontalAlignment="Stretch" />
+                            <TextBox Grid.Column="0" Text="{Binding DecimalDegreesValue, Mode=TwoWay}" Classes="meta-input" FontSize="10" Padding="4,2" MinHeight="22" Background="{DynamicResource BgSecondaryBrush}" BorderThickness="1" BorderBrush="{DynamicResource BorderDefaultBrush}" VerticalAlignment="Center" HorizontalAlignment="Stretch" />
+                            <ComboBox Grid.Column="2" ItemsSource="{Binding HemisphereChoices}" SelectedItem="{Binding Hemisphere, Mode=TwoWay}" Classes="meta-input" FontSize="10" Padding="4,2" MinHeight="22" Background="{DynamicResource BgSecondaryBrush}" BorderThickness="1" BorderBrush="{DynamicResource BorderDefaultBrush}" VerticalAlignment="Center" HorizontalAlignment="Stretch" />
                         </Grid>
 
                         <!-- GPS DMS Editor -->
                         <Grid IsVisible="{Binding IsGpsDmsEditor}" ColumnDefinitions="*,2,*,2,*,4,50">
-                            <TextBox Grid.Column="0" Text="{Binding DmsDegrees, Mode=TwoWay}" Classes="meta-input" FontSize="10" Padding="4,4" PlaceholderText="°" ToolTip.Tip="Grados" Background="{DynamicResource BgSecondaryBrush}" BorderThickness="1" BorderBrush="{DynamicResource BorderDefaultBrush}" VerticalAlignment="Center" HorizontalAlignment="Stretch" />
-                            <TextBox Grid.Column="2" Text="{Binding DmsMinutes, Mode=TwoWay}" Classes="meta-input" FontSize="10" Padding="4,4" PlaceholderText="'" ToolTip.Tip="Minutos" Background="{DynamicResource BgSecondaryBrush}" BorderThickness="1" BorderBrush="{DynamicResource BorderDefaultBrush}" VerticalAlignment="Center" HorizontalAlignment="Stretch" />
-                            <TextBox Grid.Column="4" Text="{Binding DmsSeconds, Mode=TwoWay}" Classes="meta-input" FontSize="10" Padding="4,4" PlaceholderText="&quot;" ToolTip.Tip="Segundos" Background="{DynamicResource BgSecondaryBrush}" BorderThickness="1" BorderBrush="{DynamicResource BorderDefaultBrush}" VerticalAlignment="Center" HorizontalAlignment="Stretch" />
-                            <ComboBox Grid.Column="6" ItemsSource="{Binding HemisphereChoices}" SelectedItem="{Binding Hemisphere, Mode=TwoWay}" Classes="meta-input" FontSize="11" Padding="6,4" Background="{DynamicResource BgSecondaryBrush}" BorderThickness="1" BorderBrush="{DynamicResource BorderDefaultBrush}" VerticalAlignment="Center" HorizontalAlignment="Stretch" />
+                            <TextBox Grid.Column="0" Text="{Binding DmsDegrees, Mode=TwoWay}" Classes="meta-input" FontSize="10" Padding="4,2" MinHeight="22" PlaceholderText="°" ToolTip.Tip="Grados" Background="{DynamicResource BgSecondaryBrush}" BorderThickness="1" BorderBrush="{DynamicResource BorderDefaultBrush}" VerticalAlignment="Center" HorizontalAlignment="Stretch" />
+                            <TextBox Grid.Column="2" Text="{Binding DmsMinutes, Mode=TwoWay}" Classes="meta-input" FontSize="10" Padding="4,2" MinHeight="22" PlaceholderText="'" ToolTip.Tip="Minutos" Background="{DynamicResource BgSecondaryBrush}" BorderThickness="1" BorderBrush="{DynamicResource BorderDefaultBrush}" VerticalAlignment="Center" HorizontalAlignment="Stretch" />
+                            <TextBox Grid.Column="4" Text="{Binding DmsSeconds, Mode=TwoWay}" Classes="meta-input" FontSize="10" Padding="4,2" MinHeight="22" PlaceholderText="&quot;" ToolTip.Tip="Segundos" Background="{DynamicResource BgSecondaryBrush}" BorderThickness="1" BorderBrush="{DynamicResource BorderDefaultBrush}" VerticalAlignment="Center" HorizontalAlignment="Stretch" />
+                            <ComboBox Grid.Column="6" ItemsSource="{Binding HemisphereChoices}" SelectedItem="{Binding Hemisphere, Mode=TwoWay}" Classes="meta-input" FontSize="10" Padding="4,2" MinHeight="22" Background="{DynamicResource BgSecondaryBrush}" BorderThickness="1" BorderBrush="{DynamicResource BorderDefaultBrush}" VerticalAlignment="Center" HorizontalAlignment="Stretch" />
                         </Grid>
                     </Grid>
                 </Grid>
@@ -76,8 +77,8 @@
             <DockPanel>
                 <!-- Logo / App Name -->
                 <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                    <TextBlock Text="◆" FontSize="20" Foreground="{DynamicResource AccentPrimaryBrush}" VerticalAlignment="Center" />
-                    <TextBlock Text="MegaDatos" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                    <TextBlock Text="◆" FontSize="10" Foreground="{DynamicResource AccentPrimaryBrush}" VerticalAlignment="Center" />
+                    <TextBlock Text="MegaDatos" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
                     <Border Background="{DynamicResource BgHoverBrush}" CornerRadius="4" Padding="6,2" VerticalAlignment="Center" Margin="4,0,0,0">
                         <TextBlock Text="PRO" FontSize="10" Foreground="{DynamicResource AccentSecondaryBrush}" FontWeight="Bold" />
                     </Border>
@@ -91,8 +92,6 @@
                 <!-- Center toolbar actions -->
                 <StackPanel Orientation="Horizontal" Spacing="2" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <Button Classes="toolbar-btn" Content="📂 Seleccionar Directorio" Command="{Binding OpenFolderCommand}" />
-                    <Border Width="1" Height="20" Background="{DynamicResource BorderSubtleBrush}" Margin="6,0" />
-                    <Button Classes="toolbar-btn" Content="🔄 Sincronizar" Command="{Binding RefreshFilesCommand}" />
                     <Border Width="1" Height="20" Background="{DynamicResource BorderSubtleBrush}" Margin="6,0" />
                     <Button Classes="toolbar-btn" Content="💾 Guardar Todo" Command="{Binding SaveMetadataCommand}" />
                     <Button Classes="toolbar-btn" Content="🧹 Limpieza Local" Command="{Binding StripMetadataCommand}" />
@@ -112,31 +111,31 @@
                 <!-- Left status info -->
                 <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal" Spacing="4">
-                        <TextBlock Text="📁" FontSize="11" VerticalAlignment="Center" />
-                        <TextBlock Text="Archivos:" FontSize="11" Foreground="{DynamicResource TextTertiaryBrush}" VerticalAlignment="Center" />
-                        <TextBlock Text="{Binding TotalFiles}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                        <TextBlock Text="📁" FontSize="10" VerticalAlignment="Center" />
+                        <TextBlock Text="Archivos:" FontSize="10" Foreground="{DynamicResource TextTertiaryBrush}" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding TotalFiles}" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Spacing="4">
-                        <TextBlock Text="✓" FontSize="11" Foreground="{DynamicResource AccentSecondaryBrush}" VerticalAlignment="Center" />
-                        <TextBlock Text="Seleccionados:" FontSize="11" Foreground="{DynamicResource TextTertiaryBrush}" VerticalAlignment="Center" />
-                        <TextBlock Text="{Binding SelectedCount}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource AccentSecondaryBrush}" VerticalAlignment="Center" />
+                        <TextBlock Text="✓" FontSize="10" Foreground="{DynamicResource AccentSecondaryBrush}" VerticalAlignment="Center" />
+                        <TextBlock Text="Seleccionados:" FontSize="10" Foreground="{DynamicResource TextTertiaryBrush}" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding SelectedCount}" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource AccentSecondaryBrush}" VerticalAlignment="Center" />
                     </StackPanel>
                 </StackPanel>
 
                 <!-- Right: Memory / Security -->
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                    <TextBlock Text="💾" FontSize="11" VerticalAlignment="Center" />
-                    <TextBlock Text="Uso RAM:" FontSize="11" Foreground="{DynamicResource TextTertiaryBrush}" VerticalAlignment="Center" />
-                    <TextBlock Text="{Binding MemoryUsage}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                    <TextBlock Text="💾" FontSize="10" VerticalAlignment="Center" />
+                    <TextBlock Text="Uso RAM:" FontSize="10" Foreground="{DynamicResource TextTertiaryBrush}" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding MemoryUsage}" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
                     <Border Width="1" Height="14" Background="{DynamicResource BorderSubtleBrush}" Margin="8,0" />
-                    <TextBlock Text="🛡️" FontSize="11" VerticalAlignment="Center" />
-                    <TextBlock Text="Procesamiento 100% Local" FontSize="11" Foreground="{DynamicResource AccentSuccessBrush}" VerticalAlignment="Center" />
+                    <TextBlock Text="🛡️" FontSize="10" VerticalAlignment="Center" />
+                    <TextBlock Text="Procesamiento 100% Local" FontSize="10" Foreground="{DynamicResource AccentSuccessBrush}" VerticalAlignment="Center" />
                 </StackPanel>
 
                 <!-- Center: Status -->
                 <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <Border Classes="tag">
-                        <TextBlock Text="{Binding StatusText}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" />
+                        <TextBlock Text="{Binding StatusText}" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" />
                     </Border>
                 </StackPanel>
             </DockPanel>
@@ -145,7 +144,7 @@
         <!-- ============================================================ -->
         <!-- MAIN CONTENT: 5-Column layout inspired by Antigravity IDE -->
         <!-- ============================================================ -->
-        <Grid ColumnDefinitions="48,250,1,*,1,360">
+        <Grid ColumnDefinitions="48,250,3,*,1,360">
 
             <!-- ========================================== -->
             <!-- 1. BARRA DE HERRAMIENTAS PRINCIPALES (48px)-->
@@ -164,34 +163,20 @@
                                 Command="{Binding NavigateToolCommand}"
                                 CommandParameter="Explorer"
                                 ToolTip.Tip="Explorador de Archivos" />
-                        <!-- Editor -->
+                        <!-- Format -->
                         <Button Classes="activity-btn"
-                                Classes.active="{Binding IsEditorActive}"
-                                Content="✏️"
+                                Classes.active="{Binding IsFormatActive}"
+                                Content="🔄"
                                 Command="{Binding NavigateToolCommand}"
-                                CommandParameter="Editor"
-                                ToolTip.Tip="Editor de Metadatos" />
-                        <!-- GPS -->
+                                CommandParameter="Format"
+                                ToolTip.Tip="Cambiar Formatos" />
+                        <!-- Resize -->
                         <Button Classes="activity-btn"
-                                Classes.active="{Binding IsGpsActive}"
-                                Content="🌍"
+                                Classes.active="{Binding IsResizeActive}"
+                                Content="📏"
                                 Command="{Binding NavigateToolCommand}"
-                                CommandParameter="GPS"
-                                ToolTip.Tip="Editor de Geolocalización" />
-                        <!-- Batch -->
-                        <Button Classes="activity-btn"
-                                Classes.active="{Binding IsBatchActive}"
-                                Content="📦"
-                                Command="{Binding NavigateToolCommand}"
-                                CommandParameter="Batch"
-                                ToolTip.Tip="Procesamiento por Lotes" />
-                        <!-- Strip -->
-                        <Button Classes="activity-btn"
-                                Classes.active="{Binding IsStripActive}"
-                                Content="🧹"
-                                Command="{Binding NavigateToolCommand}"
-                                CommandParameter="Strip"
-                                ToolTip.Tip="Saneamiento de Archivos" />
+                                CommandParameter="Resize"
+                                ToolTip.Tip="Cambiar Tamaños" />
                     </StackPanel>
 
                     <!-- Bottom Navigation Tools (Settings) -->
@@ -217,139 +202,70 @@
                     <!-- Sub-view 1: Folder Tree (Explorer Active) -->
                     <DockPanel IsVisible="{Binding IsExplorerActive}">
                         <TextBlock DockPanel.Dock="Top" Text="Directorios" Classes="section-header" Margin="6,0,0,10" />
+                        <Button DockPanel.Dock="Top" IsVisible="{Binding !HasDirectoryLoaded}" Command="{Binding OpenFolderCommand}" Classes="action-btn" Content="📂 Seleccionar Directorio" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,0,0,10" Padding="0,6" />
                         <TreeView ItemsSource="{Binding FolderTree}"
+                                  SelectedItem="{Binding SelectedFolderNode, Mode=TwoWay}"
                                   Background="Transparent">
+                            <TreeView.Styles>
+                                <Style Selector="TreeViewItem" x:DataType="models:FolderNode">
+                                    <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                                    <Setter Property="MinHeight" Value="22" />
+                                    <Setter Property="Margin" Value="0" />
+                                </Style>
+                            </TreeView.Styles>
                             <TreeView.ItemTemplate>
                                 <TreeDataTemplate ItemsSource="{Binding Children}" DataType="models:FolderNode">
-                                    <TextBlock Text="{Binding Name}" FontSize="12.5" Padding="2,3" />
+                                    <TextBlock Text="{Binding Name}" FontSize="10" Padding="0,2" VerticalAlignment="Center" />
                                 </TreeDataTemplate>
                             </TreeView.ItemTemplate>
                         </TreeView>
                     </DockPanel>
 
-                    <!-- Sub-view 2: Editor Inputs (Editor Active) -->
-                    <ScrollViewer IsVisible="{Binding IsEditorActive}" VerticalScrollBarVisibility="Auto">
+                    <!-- Sub-view 1.1: Format Converter (Format Active) -->
+                    <ScrollViewer IsVisible="{Binding IsFormatActive}" VerticalScrollBarVisibility="Auto">
                         <StackPanel Spacing="12">
-                            <TextBlock Text="Editor de Metadatos" Classes="section-header" Margin="6,0,0,5" />
+                            <TextBlock Text="Conversión de Formatos" Classes="section-header" Margin="6,0,0,5" />
                             
                             <StackPanel Spacing="4">
-                                <TextBlock Text="Autor" FontSize="11.5" Foreground="{DynamicResource TextSecondaryBrush}" />
-                                <TextBox Classes="meta-input" Text="{Binding EditAuthor}" PlaceholderText="Ej: Juan Pérez" />
+                                <TextBlock Text="Formato de Salida" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                <ComboBox ItemsSource="{Binding SupportedFormats}" SelectedItem="{Binding TargetFormat}" Classes="meta-input" Padding="4,2" MinHeight="22" HorizontalAlignment="Stretch" />
                             </StackPanel>
 
                             <StackPanel Spacing="4">
-                                <TextBlock Text="Copyright" FontSize="11.5" Foreground="{DynamicResource TextSecondaryBrush}" />
-                                <TextBox Classes="meta-input" Text="{Binding EditCopyright}" PlaceholderText="Ej: © 2026 Juan Pérez" />
+                                <TextBlock Text="Calidad (0-100)" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                <TextBox Text="{Binding ConversionQuality}" Classes="meta-input" Padding="4,2" MinHeight="22" HorizontalAlignment="Stretch" />
                             </StackPanel>
 
-                            <StackPanel Spacing="4">
-                                <TextBlock Text="Software" FontSize="11.5" Foreground="{DynamicResource TextSecondaryBrush}" />
-                                <TextBox Classes="meta-input" Text="{Binding EditSoftware}" PlaceholderText="Ej: Photoshop" />
-                            </StackPanel>
-
-                            <StackPanel Spacing="4">
-                                <TextBlock Text="Etiquetas (tags)" FontSize="11.5" Foreground="{DynamicResource TextSecondaryBrush}" />
-                                <TextBox Classes="meta-input" Text="{Binding EditTags}" PlaceholderText="vacaciones, naturaleza" />
-                            </StackPanel>
-
-                            <StackPanel Spacing="4">
-                                <TextBlock Text="Descripción" FontSize="11.5" Foreground="{DynamicResource TextSecondaryBrush}" />
-                                <TextBox Classes="meta-input" Text="{Binding EditDescription}" AcceptsReturn="True" Height="70" TextWrapping="Wrap" PlaceholderText="Descripción del archivo..." />
-                            </StackPanel>
-
-                            <Button Classes="action-btn" Content="💾 Guardar Cambios" Command="{Binding SaveMetadataCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,10,0,0" />
+                            <Button Classes="action-btn" Command="{Binding ExecuteBatchCommand}" Content="Convertir Seleccionados" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,10,0,0" Padding="0,6" />
                         </StackPanel>
                     </ScrollViewer>
 
-                    <!-- Sub-view 3: GPS Inputs (GPS Active) -->
-                    <ScrollViewer IsVisible="{Binding IsGpsActive}" VerticalScrollBarVisibility="Auto">
+                    <!-- Sub-view 1.2: Resize Image (Resize Active) -->
+                    <ScrollViewer IsVisible="{Binding IsResizeActive}" VerticalScrollBarVisibility="Auto">
                         <StackPanel Spacing="12">
-                            <TextBlock Text="Geolocalización (GPS)" Classes="section-header" Margin="6,0,0,5" />
-
+                            <TextBlock Text="Redimensionar Imágenes" Classes="section-header" Margin="6,0,0,5" />
+                            
                             <StackPanel Spacing="4">
-                                <TextBlock Text="Latitud" FontSize="11.5" Foreground="{DynamicResource TextSecondaryBrush}" />
-                                <TextBox Classes="meta-input" Text="{Binding GpsLatitude}" PlaceholderText="Ej: 4.7110" />
+                                <TextBlock Text="Ancho (px)" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                <TextBox Text="{Binding TargetWidth}" Classes="meta-input" Padding="4,2" MinHeight="22" HorizontalAlignment="Stretch" />
                             </StackPanel>
 
                             <StackPanel Spacing="4">
-                                <TextBlock Text="Longitud" FontSize="11.5" Foreground="{DynamicResource TextSecondaryBrush}" />
-                                <TextBox Classes="meta-input" Text="{Binding GpsLongitude}" PlaceholderText="Ej: -74.0721" />
+                                <TextBlock Text="Alto (px)" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                <TextBox Text="{Binding TargetHeight}" Classes="meta-input" Padding="4,2" MinHeight="22" HorizontalAlignment="Stretch" />
                             </StackPanel>
 
-                            <StackPanel Spacing="4">
-                                <TextBlock Text="Altitud (m)" FontSize="11.5" Foreground="{DynamicResource TextSecondaryBrush}" />
-                                <TextBox Classes="meta-input" Text="{Binding GpsAltitude}" PlaceholderText="Ej: 2640" />
-                            </StackPanel>
+                            <CheckBox Content="Mantener relación de aspecto" IsChecked="{Binding KeepAspectRatio}" FontSize="10" Margin="0,4" />
 
-                            <Border Background="{DynamicResource BgHoverBrush}" CornerRadius="4" Padding="8" Margin="0,4">
-                                <TextBlock Text="⚠️ La ubicación expone datos sensibles. Si vas a compartir la foto, se aconseja borrar el GPS." FontSize="10.5" TextWrapping="Wrap" Foreground="{DynamicResource TextSecondaryBrush}" />
-                            </Border>
-
-                            <Button Classes="action-btn" Content="💾 Aplicar Coordenadas" Command="{Binding SaveMetadataCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,6,0,0" />
-                            <Button Classes="danger-btn" Content="🗑️ Eliminar GPS" Command="{Binding ClearGpsCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+                            <Button Classes="action-btn" Command="{Binding ExecuteBatchCommand}" Content="Redimensionar Seleccionados" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,10,0,0" Padding="0,6" />
                         </StackPanel>
                     </ScrollViewer>
 
-                    <!-- Sub-view 4: Batch Panel (Batch Active) -->
-                    <ScrollViewer IsVisible="{Binding IsBatchActive}" VerticalScrollBarVisibility="Auto">
-                        <StackPanel Spacing="12">
-                            <TextBlock Text="Procesamiento Lote" Classes="section-header" Margin="6,0,0,5" />
-
-                            <StackPanel Spacing="4">
-                                <TextBlock Text="Acción" FontSize="11.5" Foreground="{DynamicResource TextSecondaryBrush}" />
-                                <ComboBox SelectedIndex="0" HorizontalAlignment="Stretch" Classes="meta-input">
-                                    <ComboBoxItem Content="Saneamiento total" />
-                                    <ComboBoxItem Content="Inyectar Autor/Copy" />
-                                    <ComboBoxItem Content="Limpiar GPS" />
-                                </ComboBox>
-                            </StackPanel>
-
-                            <CheckBox IsChecked="{Binding BatchBackupEnabled}" Margin="0,4">
-                                <TextBlock Text="Crear backup (.bak)" FontSize="11" />
-                            </CheckBox>
-
-                            <Border Background="{DynamicResource BgHoverBrush}" CornerRadius="4" Padding="8" Margin="0,2">
-                                <StackPanel Spacing="2">
-                                    <TextBlock Text="DESTINO:" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextTertiaryBrush}" />
-                                    <TextBlock Text="Directorio Activo" FontSize="11" Foreground="{DynamicResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" />
-                                </StackPanel>
-                            </Border>
-
-                            <!-- Progress panel -->
-                            <StackPanel Spacing="6" Margin="0,6">
-                                <DockPanel>
-                                    <TextBlock DockPanel.Dock="Left" Text="{Binding BatchStatusText}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" />
-                                    <TextBlock DockPanel.Dock="Right" Text="12 / 12 arch." FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" />
-                                </DockPanel>
-                                <ProgressBar Value="100" Classes="status-progress" />
-                            </StackPanel>
-
-                            <Button Classes="action-btn" Content="⚡ Iniciar Lote" Command="{Binding ExecuteBatchCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
-                        </StackPanel>
-                    </ScrollViewer>
-
-                    <!-- Sub-view 5: Stripping Panel (Strip Active) -->
-                    <ScrollViewer IsVisible="{Binding IsStripActive}" VerticalScrollBarVisibility="Auto">
-                        <StackPanel Spacing="12">
-                            <TextBlock Text="Saneamiento (Strip)" Classes="section-header" Margin="6,0,0,5" />
-
-                            <CheckBox IsChecked="True" Margin="0,2"><TextBlock Text="Metadatos EXIF" FontSize="11" /></CheckBox>
-                            <CheckBox IsChecked="True" Margin="0,2"><TextBlock Text="Geolocalización GPS" FontSize="11" /></CheckBox>
-                            <CheckBox IsChecked="True" Margin="0,2"><TextBlock Text="Datos de Autoría" FontSize="11" /></CheckBox>
-                            <CheckBox IsChecked="True" Margin="0,2"><TextBlock Text="Historial de Software" FontSize="11" /></CheckBox>
-
-                            <Border Background="#2D1111" BorderBrush="#5D2222" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0,4">
-                                <TextBlock Text="🔴 ATENCIÓN: El borrado es irreversible y se guarda directamente al archivo." FontSize="10.5" TextWrapping="Wrap" Foreground="#F0B6B6" />
-                            </Border>
-
-                            <Button Classes="danger-btn" Content="🧹 Sanear Archivos" Command="{Binding StripMetadataCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,4,0,0" />
-                        </StackPanel>
-                    </ScrollViewer>
                 </Grid>
             </Border>
 
-            <!-- Separator 1 -->
-            <Border Grid.Column="2" Background="{DynamicResource BorderSubtleBrush}" />
+            <!-- Separator 1 (Resizable) -->
+            <GridSplitter Grid.Column="2" Width="3" Background="{DynamicResource BorderSubtleBrush}" ResizeDirection="Columns" />
 
             <!-- ========================================== -->
             <!-- 3. EXPLORADOR DE ARCHIVOS (CENTER PANEL)   -->
@@ -365,10 +281,10 @@
                         <DockPanel>
                             <!-- Vista Switcher (ComboBox) on the right -->
                             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="6" Margin="12,0,0,0" VerticalAlignment="Center">
-                                <TextBlock Text="👁️ Vista:" FontSize="11.5" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                <TextBlock Text="👁️ Vista:" FontSize="10" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryBrush}" />
                                 <ComboBox ItemsSource="{Binding ViewTypes}"
                                           SelectedItem="{Binding SelectedViewType}"
-                                          FontSize="11"
+                                          FontSize="10"
                                           Height="28"
                                           Padding="8,4"
                                           Background="{DynamicResource BgTertiaryBrush}"
@@ -380,12 +296,12 @@
                             </StackPanel>
                             
                             <!-- Directorio label on the left -->
-                            <TextBlock DockPanel.Dock="Left" Text="📍 Directorio:" FontSize="11.5" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{DynamicResource TextTertiaryBrush}" />
+                            <TextBlock DockPanel.Dock="Left" Text="📍 Directorio:" FontSize="10" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{DynamicResource TextTertiaryBrush}" />
                             
                             <!-- Path input fills the remaining space -->
                             <TextBox Text="{Binding CurrentPath}"
                                      Classes="meta-input"
-                                     FontSize="11.5"
+                                     FontSize="10"
                                      Height="28"
                                      Padding="8,4"
                                      IsReadOnly="True"
@@ -394,23 +310,54 @@
                     </Border>
 
                     <!-- Files Grid -->
-                    <DataGrid ItemsSource="{Binding Files}"
+                    <DataGrid x:Name="FilesDataGrid"
+                              ItemsSource="{Binding Files}"
                               SelectedItem="{Binding SelectedFile}"
                               AutoGenerateColumns="False"
                               CanUserResizeColumns="True"
                               CanUserSortColumns="True"
-                              CanUserReorderColumns="True"
                               SelectionMode="Extended"
                               IsReadOnly="True"
+                              FontSize="10"
+                              RowHeight="22"
+                              ColumnHeaderHeight="26"
                               Margin="0">
+                        <DataGrid.Styles>
+                            <Style Selector="DataGridColumnHeader">
+                                <Setter Property="FontSize" Value="10" />
+                            </Style>
+                            <Style Selector="DataGridCell">
+                                <Setter Property="FontSize" Value="10" />
+                            </Style>
+                        </DataGrid.Styles>
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="" Binding="{Binding IconGlyph}" Width="36" IsReadOnly="True" />
-                            <DataGridTextColumn Header="Nombre de Archivo" Binding="{Binding Name}" Width="2*" IsReadOnly="True" />
-                            <DataGridTextColumn Header="Formato" Binding="{Binding FileType}" Width="*" IsReadOnly="True" IsVisible="{Binding $parent[DataGrid].((vm:MainViewModel)DataContext).IsTypeColumnVisible}" />
-                            <DataGridTextColumn Header="Tamaño" Binding="{Binding SizeFormatted}" Width="90" IsReadOnly="True" IsVisible="{Binding $parent[DataGrid].((vm:MainViewModel)DataContext).IsSizeColumnVisible}" />
-                            <DataGridTextColumn Header="Dimensiones" Binding="{Binding Resolution}" Width="120" IsReadOnly="True" IsVisible="{Binding $parent[DataGrid].((vm:MainViewModel)DataContext).IsResolutionColumnVisible}" />
-                            <DataGridTextColumn Header="Coordenadas" Binding="{Binding GpsCoordinates}" Width="180" IsReadOnly="True" IsVisible="{Binding $parent[DataGrid].((vm:MainViewModel)DataContext).IsGpsColumnVisible}" />
-                            <DataGridTextColumn Header="Última Modificación" Binding="{Binding DateModified, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}" Width="140" IsReadOnly="True" IsVisible="{Binding $parent[DataGrid].((vm:MainViewModel)DataContext).IsDateColumnVisible}" />
+                            <DataGridTemplateColumn Width="40" CanUserSort="False" Header=" ">
+                                <DataGridTemplateColumn.HeaderTemplate>
+                                    <DataTemplate>
+                                        <CheckBox IsChecked="{Binding #FilesDataGrid.((vm:MainViewModel)DataContext).AreAllFilesSelected}" 
+                                                  HorizontalAlignment="Center" 
+                                                  VerticalAlignment="Center"
+                                                  Margin="6,0,0,0"
+                                                  ToolTip.Tip="Seleccionar todos" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.HeaderTemplate>
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <CheckBox IsChecked="{Binding IsSelected}" 
+                                                  IsEnabled="{Binding IsCheckable}"
+                                                  HorizontalAlignment="Center" 
+                                                  VerticalAlignment="Center" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="Nombre de Archivo" Binding="{Binding Name}" Width="250" IsReadOnly="True" />
+                            <DataGridTextColumn Header="Formato" Binding="{Binding FileType}" Width="120" IsReadOnly="True" IsVisible="{Binding #FilesDataGrid.((vm:MainViewModel)DataContext).IsTypeColumnVisible}" />
+                            <DataGridTextColumn Header="Tamaño" Binding="{Binding SizeFormatted}" Width="90" IsReadOnly="True" IsVisible="{Binding #FilesDataGrid.((vm:MainViewModel)DataContext).IsSizeColumnVisible}" />
+                            <DataGridTextColumn Header="Dimensiones" Binding="{Binding Resolution}" Width="120" IsReadOnly="True" IsVisible="{Binding #FilesDataGrid.((vm:MainViewModel)DataContext).IsResolutionColumnVisible}" />
+                            <DataGridTextColumn Header="Megapíxeles" Binding="{Binding MegapixelsFormatted}" Width="90" IsReadOnly="True" IsVisible="{Binding #FilesDataGrid.((vm:MainViewModel)DataContext).IsMegapixelColumnVisible}" />
+                            <DataGridTextColumn Header="GPS (Decimal)" Binding="{Binding GpsDecimal}" Width="150" IsReadOnly="True" IsVisible="{Binding #FilesDataGrid.((vm:MainViewModel)DataContext).IsGpsColumnVisible}" />
+                            <DataGridTextColumn Header="GPS (DMS)" Binding="{Binding GpsDMS}" Width="180" IsReadOnly="True" IsVisible="{Binding #FilesDataGrid.((vm:MainViewModel)DataContext).IsGpsColumnVisible}" />
+                            <DataGridTextColumn Header="Última Modificación" Binding="{Binding DateModified, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}" Width="140" IsReadOnly="True" IsVisible="{Binding #FilesDataGrid.((vm:MainViewModel)DataContext).IsDateColumnVisible}" />
                         </DataGrid.Columns>
                     </DataGrid>
                 </DockPanel>
@@ -428,10 +375,10 @@
 
                         <!-- Panel Header -->
                         <DockPanel Margin="0,0,0,8">
-                            <TextBlock DockPanel.Dock="Left" Text="🔍" FontSize="16" VerticalAlignment="Center" Margin="0,0,8,0" />
+                            <TextBlock DockPanel.Dock="Left" Text="🔍" FontSize="10" VerticalAlignment="Center" Margin="0,0,8,0" />
                             <StackPanel>
-                                <TextBlock Text="Inspector de Propiedades" FontSize="13.5" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" />
-                                <TextBlock Text="{Binding SelectedFileName}" FontSize="11" Foreground="{DynamicResource TextAccentBrush}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Margin="0,2,0,0" />
+                                <TextBlock Text="Inspector de Propiedades" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                <TextBlock Text="{Binding SelectedFileName}" FontSize="10" Foreground="{DynamicResource TextAccentBrush}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Margin="0,2,0,0" />
                             </StackPanel>
                         </DockPanel>
 
@@ -439,89 +386,90 @@
 
                         <!-- Buttons Panel (Guardar & Deshacer) -->
                         <Grid ColumnDefinitions="*,8,*" Margin="0,2,0,10">
-                            <Button Grid.Column="0" Classes="action-btn" Content="💾 Guardar" Command="{Binding SaveMetadataCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" FontSize="12" Padding="0,8" />
-                            <Button Grid.Column="2" Classes="toolbar-btn" Content="↺ Deshacer" Command="{Binding UndoChangesCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" FontSize="12" Padding="0,8" BorderThickness="1" BorderBrush="{DynamicResource BorderDefaultBrush}" />
+                            <Button Grid.Column="0" Classes="action-btn" Content="💾 Guardar" Command="{Binding SaveMetadataCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" FontSize="10" Padding="0,2" />
+                            <Button Grid.Column="2" Classes="toolbar-btn" Content="↺ Deshacer" Command="{Binding UndoChangesCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" FontSize="10" Padding="0,2" BorderThickness="1" BorderBrush="{DynamicResource BorderDefaultBrush}" />
                         </Grid>
 
                         <!-- ===== General Info Section (Card Style) ===== -->
-                        <Border Background="{DynamicResource BgTertiaryBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="6" Margin="0,3">
-                            <Expander IsExpanded="True" Background="Transparent" BorderThickness="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                        <Border Background="{DynamicResource BgTertiaryBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="6" Margin="0,2">
+                            <Expander IsExpanded="False" Background="Transparent" BorderThickness="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="2,0">
                                 <Expander.Header>
                                     <StackPanel Orientation="Horizontal" Spacing="6">
-                                        <TextBlock Text="📋" FontSize="12.5" VerticalAlignment="Center" />
-                                        <TextBlock Text="Información del Archivo" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                                        <TextBlock Text="📋" FontSize="9" VerticalAlignment="Center" />
+                                        <TextBlock Text="Información del Archivo" FontSize="9" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </Expander.Header>
-                                <ItemsControl ItemsSource="{Binding GeneralInfo}" ItemTemplate="{StaticResource MetadataEntryTemplate}" Margin="0,6,0,0" />
+                                <ItemsControl ItemsSource="{Binding GeneralInfo}" ItemTemplate="{StaticResource MetadataEntryTemplate}" Margin="0,2,0,0" />
                             </Expander>
                         </Border>
 
                         <!-- ===== EXIF Section (Card Style) ===== -->
-                        <Border Background="{DynamicResource BgTertiaryBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="6" Margin="0,3">
-                            <Expander IsExpanded="False" Background="Transparent" BorderThickness="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                        <Border Background="{DynamicResource BgTertiaryBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="6" Margin="0,2">
+                            <Expander IsExpanded="False" Background="Transparent" BorderThickness="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="2,0">
                                 <Expander.Header>
                                     <StackPanel Orientation="Horizontal" Spacing="6">
-                                        <TextBlock Text="📷" FontSize="12.5" VerticalAlignment="Center" />
-                                        <TextBlock Text="EXIF / Hardware" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                                        <TextBlock Text="📷" FontSize="9" VerticalAlignment="Center" />
+                                        <TextBlock Text="EXIF / Hardware" FontSize="9" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </Expander.Header>
-                                <ItemsControl ItemsSource="{Binding ExifData}" ItemTemplate="{StaticResource MetadataEntryTemplate}" Margin="0,6,0,0" />
+                                <ItemsControl ItemsSource="{Binding ExifData}" ItemTemplate="{StaticResource MetadataEntryTemplate}" Margin="0,2,0,0" />
                             </Expander>
                         </Border>
 
                         <!-- ===== Authorship Section (Card Style) ===== -->
-                        <Border Background="{DynamicResource BgTertiaryBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="6" Margin="0,3">
-                            <Expander IsExpanded="True" Background="Transparent" BorderThickness="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                        <Border Background="{DynamicResource BgTertiaryBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="6" Margin="0,2">
+                            <Expander IsExpanded="False" Background="Transparent" BorderThickness="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="2,0">
                                 <Expander.Header>
                                     <StackPanel Orientation="Horizontal" Spacing="6">
-                                        <TextBlock Text="👤" FontSize="12.5" VerticalAlignment="Center" />
-                                        <TextBlock Text="Autoría &amp; Derechos" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                                        <TextBlock Text="👤" FontSize="9" VerticalAlignment="Center" />
+                                        <TextBlock Text="Autoría &amp; Derechos" FontSize="9" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </Expander.Header>
-                                <ItemsControl ItemsSource="{Binding AuthorshipData}" ItemTemplate="{StaticResource MetadataEntryTemplate}" Margin="0,6,0,0" />
+                                <ItemsControl ItemsSource="{Binding AuthorshipData}" ItemTemplate="{StaticResource MetadataEntryTemplate}" Margin="0,2,0,0" />
                             </Expander>
                         </Border>
 
                         <!-- ===== GPS Section (Card Style) ===== -->
-                        <Border Background="{DynamicResource BgTertiaryBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="6" Margin="0,3">
-                            <Expander IsExpanded="True" Background="Transparent" BorderThickness="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                        <Border Background="{DynamicResource BgTertiaryBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="6" Margin="0,2">
+                            <Expander IsExpanded="False" Background="Transparent" BorderThickness="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="2,0">
                                 <Expander.Header>
-                                    <Grid ColumnDefinitions="*,Auto" HorizontalAlignment="Stretch" Width="290">
+                                    <Grid ColumnDefinitions="*,Auto" HorizontalAlignment="Stretch">
                                         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                            <TextBlock Text="🌍" FontSize="12.5" VerticalAlignment="Center" />
-                                            <TextBlock Text="Geolocalización GPS" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                                            <TextBlock Text="🌍" FontSize="9" VerticalAlignment="Center" />
+                                            <TextBlock Text="Geolocalización GPS" FontSize="9" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
                                         </StackPanel>
                                         <ComboBox Grid.Column="1" 
                                                   SelectedItem="{Binding SelectedGpsFormat}"
-                                                  FontSize="10.5"
-                                                  Height="24"
-                                                  Padding="6,2"
+                                                  FontSize="10"
+                                                  Height="22"
+                                                  Padding="4,2"
                                                   Background="{DynamicResource BgSecondaryBrush}"
                                                   BorderThickness="1"
                                                   BorderBrush="{DynamicResource BorderSubtleBrush}"
                                                   HorizontalAlignment="Right"
                                                   VerticalAlignment="Center"
-                                                  Width="95"
-                                                  Margin="0,0,10,0">
+                                                  Width="85"
+                                                  Margin="0,0,4,0">
                                             <x:String>Decimal</x:String>
                                             <x:String>DMS</x:String>
                                         </ComboBox>
                                     </Grid>
                                 </Expander.Header>
-                                <ItemsControl ItemsSource="{Binding GpsData}" ItemTemplate="{StaticResource MetadataEntryTemplate}" Margin="0,6,0,0" />
+                                <ItemsControl ItemsSource="{Binding GpsData}" ItemTemplate="{StaticResource MetadataEntryTemplate}" Margin="0,2,0,0" />
+
                             </Expander>
                         </Border>
 
                         <!-- ===== IPTC / XMP Section (Card Style) ===== -->
-                        <Border Background="{DynamicResource BgTertiaryBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="6" Margin="0,3">
-                            <Expander IsExpanded="True" Background="Transparent" BorderThickness="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                        <Border Background="{DynamicResource BgTertiaryBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="6" Margin="0,2">
+                            <Expander IsExpanded="False" Background="Transparent" BorderThickness="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="2,0">
                                 <Expander.Header>
                                     <StackPanel Orientation="Horizontal" Spacing="6">
-                                        <TextBlock Text="📝" FontSize="12.5" VerticalAlignment="Center" />
-                                        <TextBlock Text="IPTC / XMP" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                                        <TextBlock Text="📝" FontSize="9" VerticalAlignment="Center" />
+                                        <TextBlock Text="IPTC / XMP" FontSize="9" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </Expander.Header>
-                                <ItemsControl ItemsSource="{Binding IptcData}" ItemTemplate="{StaticResource MetadataEntryTemplate}" Margin="0,6,0,0" />
+                                <ItemsControl ItemsSource="{Binding IptcData}" ItemTemplate="{StaticResource MetadataEntryTemplate}" Margin="0,2,0,0" />
                             </Expander>
                         </Border>
 
@@ -549,13 +497,13 @@
                 <StackPanel Margin="24" Spacing="16">
                     <!-- Title -->
                     <StackPanel Orientation="Horizontal" Spacing="10">
-                        <TextBlock Text="💾" FontSize="20" VerticalAlignment="Center" />
-                        <TextBlock Text="Confirmar Guardado" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                        <TextBlock Text="💾" FontSize="10" VerticalAlignment="Center" />
+                        <TextBlock Text="Confirmar Guardado" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
                     </StackPanel>
 
                     <!-- Message -->
                     <TextBlock Text="¿Deseas crear una copia de seguridad (.bak) del archivo original antes de aplicar y guardar los cambios de metadatos?"
-                               FontSize="12.5"
+                               FontSize="10"
                                Foreground="{DynamicResource TextSecondaryBrush}"
                                TextWrapping="Wrap" />
 
@@ -564,6 +512,42 @@
                         <Button Classes="toolbar-btn" Content="Cancelar" Command="{Binding CancelSaveCommand}" Padding="16,8" />
                         <Button Classes="toolbar-btn" Content="No, guardar directo" Command="{Binding ConfirmSaveCommand}" CommandParameter="False" Padding="14,8" BorderThickness="1" BorderBrush="{DynamicResource BorderDefaultBrush}" />
                         <Button Classes="action-btn" Content="Sí, crear backup" Command="{Binding ConfirmSaveCommand}" CommandParameter="True" Padding="16,8" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- ============================================================ -->
+        <!-- FLOATING DIALOG OVERLAY: Batch Process Confirmation         -->
+        <!-- ============================================================ -->
+        <Grid Background="#A0000000" IsVisible="{Binding IsConfirmDialogOpen}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Border Background="{DynamicResource BgElevatedBrush}"
+                    BorderBrush="{DynamicResource BorderFocusBrush}"
+                    BorderThickness="1.5"
+                    CornerRadius="12"
+                    Width="450"
+                    Height="210"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    BoxShadow="0 8 32 #A0000000">
+                <StackPanel Margin="24" Spacing="16">
+                    <!-- Title -->
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="⚙️" FontSize="10" VerticalAlignment="Center" />
+                        <TextBlock Text="Opciones de Procesamiento" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <!-- Message -->
+                    <TextBlock Text="Al procesar estos archivos, ¿desea crear copias o reemplazar los originales? ¡Reemplazar los originales no se puede deshacer!"
+                               FontSize="10"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               TextWrapping="Wrap" />
+
+                    <!-- Buttons -->
+                    <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,10,0,0" HorizontalAlignment="Right">
+                        <Button Classes="toolbar-btn" Content="Cancelar" Command="{Binding CancelBatchCommand}" Padding="16,8" />
+                        <Button Classes="action-btn" Content="Crear Copia" Command="{Binding ConfirmBatchCommand}" CommandParameter="False" Padding="14,8" />
+                        <Button Classes="toolbar-btn" Content="Reemplazar (Peligro)" Command="{Binding ConfirmBatchCommand}" CommandParameter="True" Padding="16,8" Foreground="#ff4444" BorderThickness="1" BorderBrush="#80ff4444" />
                     </StackPanel>
                 </StackPanel>
             </Border>
