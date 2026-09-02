@@ -4,6 +4,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
+using MegaDatos.Services;
 using MegaDatos.ViewModels;
 using MegaDatos.Views;
 
@@ -22,11 +23,15 @@ public partial class App : Application
         
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            var savedState = AppStateService.Instance.LoadState();
             var vm = new MainViewModel();
+
             var mainWindow = new MainWindow
             {
                 DataContext = vm,
             };
+
+            mainWindow.ApplySavedWindowState(savedState);
 
             vm.RequestOpenFolderAsync = async () =>
             {
@@ -39,7 +44,11 @@ public partial class App : Application
             };
 
             desktop.MainWindow = mainWindow;
-            Console.WriteLine("App: MainWindow instantiated and set");
+            
+            // Cargar estado previo en el ViewModel
+            vm.LoadSavedState(savedState);
+
+            Console.WriteLine("App: MainWindow instantiated and state loaded");
         }
         else
         {

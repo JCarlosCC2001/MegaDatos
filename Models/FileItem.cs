@@ -1,6 +1,7 @@
 using System;
-
+using System.Collections.Generic;
 using CommunityToolkit.Mvvm.ComponentModel;
+using MegaDatos.Models.Templates;
 
 namespace MegaDatos.Models;
 
@@ -30,6 +31,70 @@ public partial class FileItem : ObservableObject
     public string Resolution { get; set; } = "8256 × 5504 px";
     public string GpsDecimal { get; set; } = "—";
     public string GpsDMS { get; set; } = "—";
+
+    // ===== Template Compliance Properties =====
+    private ComplianceState _templateCompliance = ComplianceState.None;
+    public ComplianceState TemplateCompliance
+    {
+        get => _templateCompliance;
+        set
+        {
+            if (SetProperty(ref _templateCompliance, value))
+            {
+                OnPropertyChanged(nameof(TemplateBadgeText));
+                OnPropertyChanged(nameof(TemplateBadgeColor));
+                OnPropertyChanged(nameof(TemplateBadgeBackground));
+                OnPropertyChanged(nameof(HasTemplateAlert));
+            }
+        }
+    }
+
+    private string _templateComplianceMessage = string.Empty;
+    public string TemplateComplianceMessage
+    {
+        get => _templateComplianceMessage;
+        set => SetProperty(ref _templateComplianceMessage, value);
+    }
+
+    private List<string> _templateComplianceDetails = new();
+    public List<string> TemplateComplianceDetails
+    {
+        get => _templateComplianceDetails;
+        set => SetProperty(ref _templateComplianceDetails, value);
+    }
+
+    public string TemplateBadgeText => TemplateCompliance switch
+    {
+        ComplianceState.Compliant => "✓ Cumple",
+        ComplianceState.NonCompliant => "✕ Discrepancia",
+        ComplianceState.Incomplete => "⚠ Incompleto",
+        _ => "—"
+    };
+
+    public string TemplateBadgeColor => TemplateCompliance switch
+    {
+        ComplianceState.Compliant => "#10b981",    // Verde esmeralda
+        ComplianceState.NonCompliant => "#ef4444", // Rojo
+        ComplianceState.Incomplete => "#f59e0b",   // Amarillo ámbar
+        _ => "#6b7280"                            // Gris
+    };
+
+    public string TemplateBadgeBackground => TemplateCompliance switch
+    {
+        ComplianceState.Compliant => "#2010b981",
+        ComplianceState.NonCompliant => "#20ef4444",
+        ComplianceState.Incomplete => "#20f59e0b",
+        _ => "Transparent"
+    };
+
+    public bool HasTemplateAlert => TemplateCompliance == ComplianceState.NonCompliant || TemplateCompliance == ComplianceState.Incomplete;
+
+    public void SetComplianceResult(TemplateComplianceResult result)
+    {
+        TemplateCompliance = result.State;
+        TemplateComplianceMessage = result.SummaryMessage;
+        TemplateComplianceDetails = result.Details;
+    }
 
     public string MegapixelsFormatted
     {

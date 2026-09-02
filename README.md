@@ -28,14 +28,67 @@ Extrae y muestra metadatos de los archivos seleccionados.
     *   Soporte para cambiar la visualización entre formato Decimal y DMS (Grados, Minutos, Segundos) en tiempo real.
 *   **Autoría:** Edición directa de campos de autor, copyright, software y calificación.
 
-### 3. Herramientas de Procesamiento por Lotes
-*   **Redimensión (`Resize`):**
-    *   Permite especificar Ancho (`TargetWidth`) y Alto (`TargetHeight`).
-    *   **Mantener Relación de Aspecto:** Al activarse, recalcula automáticamente la dimensión opuesta mientras el usuario ajusta un valor (`OnKeepAspectRatioChanged`).
-*   **Conversión de Formato (`Format`):**
-    *   Convierte entre formatos populares (JPG, PNG, WEBP, BMP, TIFF) manteniendo los metadatos y el tipo de entrelazado original (Progressive/Baseline).
-*   **Diálogo de Confirmación (Crear Copia vs. Reemplazar):**
-    *   Antes de ejecutar cualquier lote, la UI muestra un diálogo (`IsConfirmDialogOpen`) que da a elegir entre generar archivos nuevos (con sufijos como `_convertido` o `_WxH`) o sobrescribir irreversiblemente los originales.
+### 3. Herramientas de Procesamiento por Lotes y Metadatos Avanzados
+*   **Plantillas de Metadatos (`Templates` - `📋`):**
+    *   Verificación, diagnóstico y aplicación de perfiles estándar de aplicaciones y programas:
+        *   **Adobe Photoshop:** Metadatos de software, espacio de color sRGB, resolución 72/300 DPI y sincronización de fechas.
+        *   **WhatsApp:** Purga total de bloques EXIF/XMP/IPTC idéntica a la compresión y limpieza que aplica WhatsApp.
+        *   **Timestamp Camera:** Firma de aplicación móvil, datos ópticos de smartphone y sincronización de fecha de captura a partir de nombres de archivo `TimePhoto_YYYYMMDD_HHMMSS`.
+        *   **Captura de Pantalla:** Limpieza de datos ópticos de cámara y asignación de resolución de pantalla nativa.
+        *   **⚪ (Ninguna):** Modo neutral para navegar sin validación de plantillas.
+    *   **Vista Exclusiva:** Vista dedicada *"Verificación de Plantilla"* que muestra únicamente las columnas relevantes (Nombre, Estado Plantilla y Diagnóstico detallado).
+*   **Datos de Teléfono / Celular (`Phone` - `📱`):**
+    *   Incrustación de hardware de smartphones reales (Apple iPhone 15 Pro, Samsung Galaxy S24 Ultra, Xiaomi 14 Leica, Google Pixel 8 Pro, Motorola Edge 50 Pro).
+    *   Inyecta Make, Model, Software de SO, apertura real (`FNumber`), distancia focal equivalente (`FocalLengthIn35mmFilm`), ISO, modo de medición y sincronización de fechas.
+    *   Modos: *Rellenar solo datos faltantes* vs. *Reemplazar todos los datos de cámara*, con opción para conservar GPS original y generar copias `.bak`.
+*   **Generador de Coordenadas GPS con Radio (`GpsGen` - `📍`):**
+    *   Genera coordenadas aleatorias uniformemente distribuidas en un círculo alrededor de un punto medio.
+    *   Radio configurable en metros (m) o kilómetros (km) con botones de acceso rápido (`100m`, `500m`, `1km`, `5km`).
+    *   Botón *"Copiar de Foto"* para usar la ubicación de cualquier imagen seleccionada.
+    *   Modos de asignación: *Dispersión aleatoria por cada foto* vs. *Misma coordenada para todo el lote*.
+    *   Inyección estricta en formato EXIF racional (DMS, `GPSLatitudeRef`, `GPSLongitudeRef`, `GPSAltitude`, `GPSVersionID`).
+    *   Tarjeta de simulación en vivo en formato Decimal y DMS.
+*   **Limpieza de Metadatos (`Clean` - `🧹`):**
+    *   Limpieza total (`image.Strip()`) o selectiva (GPS, EXIF de cámara, Autoría/XMP, IPTC).
+*   **Redimensión (`Resize` - `📏`):**
+    *   Ajuste de dimensiones en píxeles con opción de mantener relación de aspecto automática.
+*   **Conversión de Formato (`Format` - `🔄`):**
+    *   Conversión entre formatos (JPG, PNG, WEBP, BMP, TIFF) preservando el tipo de entrelazado (Progressive/Baseline).
+*   **Casilla de Selección Masiva en Cabecera:**
+    *   CheckBox maestro en el encabezado de la primera columna para seleccionar o deseleccionar todos los archivos en un solo clic, con sincronización tri-state en tiempo real.
+
+---
+
+## 📌 Lista de Tareas Pendientes / Roadmap de Metadatos Forenses y Profundos
+
+Para garantizar una minuciosidad forense absoluta, libre de discrepancias en análisis avanzados de metadatos (ej. ExifTool, FotoForensics), se tienen programadas las siguientes mejoras de bajo nivel:
+
+1. **Perfiles de Color ICC Reales (APP2):**
+   * [ ] Inyección de perfiles de color binarios embebidos: **Display P3** (específico de iPhone/iPad/Mac) y **sRGB IEC61966-2.1** (estándar Android/Windows).
+   * [ ] Corrección de coincidencia entre el tag `ColorSpace` (EXIF) y el perfil ICC real adjunto.
+
+2. **Husos Horarios y Desfases Temporales (`OffsetTime`):**
+   * [ ] Soporte para etiquetas EXIF 2.31+: `OffsetTime`, `OffsetTimeOriginal` y `OffsetTimeDigitized` (ej. `-05:00`, `+01:00`) para reflejar con exactitud la zona horaria del dispositivo de captura.
+
+3. **Temporización de Alta Precisión (`SubSecTime`):**
+   * [ ] Generación e inyección de `SubSecTime`, `SubSecTimeOriginal` y `SubSecTimeDigitized` (milisegundos/microsegundos del momento exacto del disparo, crucial para fotos tomadas en ráfaga).
+
+4. **Tratamiento y Purga de MakerNotes Foráneos:**
+   * [ ] Detección y eliminación automática de bloques binarios MakerNotes incompatibles al convertir o aplicar perfiles móviles (evitar que una foto marcada como iPhone conserve un MakerNote residual de Canon, Nikon o Sony).
+
+5. **Sincronización y Purga de la Miniatura Oculta (IFD1 Thumbnail):**
+   * [ ] Regenerar o eliminar la miniatura JPEG incrustada de baja resolución en el segundo IFD (`IFD1`) al redimensionar, limpiar o modificar una imagen, evitando que software forense detecte la versión previa sin editar.
+
+6. **Árbol de Linaje e Historial XMP (`xmpMM`):**
+   * [ ] Generación coherente de UUIDs para `xmpMM:DocumentID`, `xmpMM:InstanceID` y secuencias de eventos `xmpMM:History` en la plantilla de Photoshop para simular historiales de guardado legítimos.
+
+7. **Metadatos de Disparo Derivados (Valores APEX):**
+   * [ ] Cálculo matemático e inyección de `BrightnessValue`, `ShutterSpeedValue` y `ApertureValue` coherentes con los valores de `ExposureTime`, `FNumber` e `ISO`.
+
+8. **Bloques de Recursos 8BIM de Photoshop (APP13):**
+   * [ ] Soporte para incrustar bloques de recursos binarios de Photoshop (`0x03ed` para resolución física DPI, flags de impresión y registros IPTC-NAA extendidos).
+
+---
 
 ## Convenciones Críticas de Desarrollo (¡NO ROMPER!)
 
@@ -65,6 +118,7 @@ Si eres un desarrollador continuando el trabajo en este proyecto, por favor ten 
 *   **Comando de compilación rápida:** `dotnet build`
 
 ## Estructura del Proyecto
-*   `/Models`: Contiene modelos de datos como `FileItem`, `FolderNode` y `MetadataEntry`. El modelo `MetadataEntry` contiene la lógica compleja de conversión bidireccional entre coordenadas GPS Decimales y DMS.
+*   `/Models`: Contiene modelos de datos como `FileItem`, `FolderNode`, `MetadataEntry`, perfiles de dispositivos (`/Models/Devices`) y plantillas de metadatos (`/Models/Templates`).
+*   `/Services`: Servicios auxiliares como `AppStateService` (persistencia) y `GpsGeneratorService` (cálculo y dispersión aleatoria geográfica).
 *   `/ViewModels`: Lógica de presentación y negocio. `MainViewModel.cs` es el controlador principal (Fat ViewModel) para todas las operaciones actuales.
 *   `/Views`: Interfaces de usuario en XAML (`MainWindow.axaml`). Utiliza estilos dinámicos definidos en Avalonia.
