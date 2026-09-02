@@ -1,4 +1,5 @@
 using ImageMagick;
+using System.Threading.Tasks;
 
 namespace MegaDatos.Models.Templates;
 
@@ -26,4 +27,7 @@ public class NoneTemplate : IMetadataTemplate
     {
         // No-op: No altera el archivo
     }
+
+    public bool UsesExifTool => false;
+    public Task ApplyWithExifToolAsync(string targetPath, FileItem file) => Task.CompletedTask;
 }

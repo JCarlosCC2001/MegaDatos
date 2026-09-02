@@ -1,0 +1,1 @@
+- [Pendiente] Lograr cambiar el ExifByteOrder a MM con Exiftool en la herramienta Phone.

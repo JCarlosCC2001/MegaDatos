@@ -30,6 +30,7 @@ public class PhoneDeviceRegistry
             FocalLength = 6.78,
             FocalLength35mm = 24,
             DefaultIso = 64,
+            ExifByteOrder = "MM",
             Description = "Cámara principal de 48 MP con sensor Quad-Pixel y lente de 24 mm equivalente.",
             IconGlyph = "🍏"
         });
@@ -48,6 +49,7 @@ public class PhoneDeviceRegistry
             FocalLength = 5.7,
             FocalLength35mm = 26,
             DefaultIso = 50,
+            ExifByteOrder = "MM",
             Description = "Cámara principal de 12 MP con apertura f/1.5 y Photonic Engine.",
             IconGlyph = "🍏"
         });

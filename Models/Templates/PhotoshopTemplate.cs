@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using ImageMagick;
+using System.Threading.Tasks;
 
 namespace MegaDatos.Models.Templates;
 
@@ -86,4 +87,7 @@ public class PhotoshopTemplate : IMetadataTemplate
 
         image.SetProfile(exif);
     }
+
+    public bool UsesExifTool => false;
+    public Task ApplyWithExifToolAsync(string targetPath, FileItem file) => Task.CompletedTask;
 }

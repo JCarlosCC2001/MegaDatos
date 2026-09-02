@@ -22,6 +22,7 @@ public class PhoneDeviceProfile
     public double DefaultExposureTime { get; set; } = 0.00833; // 1/120s
     public string Description { get; set; } = string.Empty;
     public string IconGlyph { get; set; } = "📱";
+    public string ExifByteOrder { get; set; } = "II";
 
     public string DisplayName => $"{IconGlyph} {Brand} {ModelName}";
 
@@ -29,6 +30,7 @@ public class PhoneDeviceProfile
 
     public void ApplyToImage(MagickImage image, FileItem file, bool overwriteAll, bool preserveGps)
     {
+        // ... (Mantenemos el código anterior por retrocompatibilidad o lo dejamos intacto, aunque ya no se usará desde MainViewModel para Phone)
         var exif = image.GetExifProfile() ?? new ExifProfile();
 
         // 1. Make & Model
@@ -66,7 +68,7 @@ public class PhoneDeviceProfile
             }
         }
 
-        // 4. Optical parameters (FNumber, FocalLength, FocalLengthIn35mmFilm)
+        // 4. Optical parameters
         if (overwriteAll || exif.GetValue(ExifTag.FNumber) == null)
         {
             uint fNumNumerator = (uint)Math.Round(FNumber * 100);
@@ -93,31 +95,31 @@ public class PhoneDeviceProfile
         }
         if (overwriteAll || exif.GetValue(ExifTag.ExposureProgram) == null)
         {
-            exif.SetValue(ExifTag.ExposureProgram, (ushort)2); // Normal program
+            exif.SetValue(ExifTag.ExposureProgram, (ushort)2);
         }
         if (overwriteAll || exif.GetValue(ExifTag.MeteringMode) == null)
         {
-            exif.SetValue(ExifTag.MeteringMode, (ushort)5); // Pattern / Multi-segment
+            exif.SetValue(ExifTag.MeteringMode, (ushort)5);
         }
         if (overwriteAll || exif.GetValue(ExifTag.Flash) == null)
         {
-            exif.SetValue(ExifTag.Flash, (ushort)16); // Flash did not fire, auto mode
+            exif.SetValue(ExifTag.Flash, (ushort)16);
         }
         if (overwriteAll || exif.GetValue(ExifTag.WhiteBalance) == null)
         {
-            exif.SetValue(ExifTag.WhiteBalance, (ushort)0); // Auto white balance
+            exif.SetValue(ExifTag.WhiteBalance, (ushort)0);
         }
         if (overwriteAll || exif.GetValue(ExifTag.ColorSpace) == null)
         {
-            exif.SetValue(ExifTag.ColorSpace, (ushort)1); // sRGB
+            exif.SetValue(ExifTag.ColorSpace, (ushort)1);
         }
         if (overwriteAll || exif.GetValue(ExifTag.SensingMethod) == null)
         {
-            exif.SetValue(ExifTag.SensingMethod, (ushort)2); // One-chip color area sensor
+            exif.SetValue(ExifTag.SensingMethod, (ushort)2);
         }
         if (overwriteAll || exif.GetValue(ExifTag.SceneCaptureType) == null)
         {
-            exif.SetValue(ExifTag.SceneCaptureType, (ushort)0); // Standard
+            exif.SetValue(ExifTag.SceneCaptureType, (ushort)0);
         }
         if (overwriteAll || exif.GetValue(ExifTag.PixelXDimension) == null)
         {
@@ -148,6 +150,104 @@ public class PhoneDeviceProfile
         }
 
         image.SetProfile(exif);
+    }
+
+    public async System.Threading.Tasks.Task ApplyWithExifToolAsync(string imagePath, FileItem file, bool overwriteAll, bool preserveGps)
+    {
+        string exiftoolPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "exiftool.exe");
+        if (!File.Exists(exiftoolPath))
+        {
+            exiftoolPath = Path.Combine(Directory.GetCurrentDirectory(), "Assets", "exiftool.exe");
+        }
+
+        // Soporte si el usuario olvidó renombrar el ejecutable descargado
+        if (!File.Exists(exiftoolPath))
+        {
+            exiftoolPath = Path.Combine(Directory.GetCurrentDirectory(), "Assets", "exiftool(-k).exe");
+        }
+        if (!File.Exists(exiftoolPath))
+        {
+            exiftoolPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "exiftool(-k).exe");
+        }
+
+        if (!File.Exists(exiftoolPath))
+        {
+            throw new FileNotFoundException("No se encontró exiftool.exe en la carpeta Assets.", exiftoolPath);
+        }
+
+        var psi = new System.Diagnostics.ProcessStartInfo
+        {
+            FileName = exiftoolPath,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardError = true,
+            RedirectStandardOutput = true
+        };
+
+        psi.ArgumentList.Add("-overwrite_original");
+        psi.ArgumentList.Add("-m");
+        psi.ArgumentList.Add("-P");
+        
+        // Siempre forzamos la reescritura total del contenedor EXIF con el ByteOrder especificado
+        // para garantizar la coherencia forense del dispositivo.
+        psi.ArgumentList.Add("-all=");
+        psi.ArgumentList.Add("-tagsfromfile");
+        psi.ArgumentList.Add("@");
+        psi.ArgumentList.Add("-all:all");
+        psi.ArgumentList.Add("-unsafe");
+        psi.ArgumentList.Add($"-ExifByteOrder={ExifByteOrder}");
+
+        psi.ArgumentList.Add($"-Make={ExifMake}");
+        psi.ArgumentList.Add($"-Model={ExifModel}");
+        if (!string.IsNullOrEmpty(Software)) psi.ArgumentList.Add($"-Software={Software}");
+        if (!string.IsNullOrEmpty(LensMake)) psi.ArgumentList.Add($"-LensMake={LensMake}");
+        if (!string.IsNullOrEmpty(LensModel)) psi.ArgumentList.Add($"-LensModel={LensModel}");
+
+        psi.ArgumentList.Add($"-FNumber={FNumber}");
+        psi.ArgumentList.Add($"-FocalLength={FocalLength}");
+        psi.ArgumentList.Add($"-FocalLengthIn35mmFormat={FocalLength35mm}");
+        psi.ArgumentList.Add($"-ISO={DefaultIso}");
+        psi.ArgumentList.Add($"-ExposureTime={DefaultExposureTime}");
+        psi.ArgumentList.Add($"-ExposureProgram=2");
+        psi.ArgumentList.Add($"-MeteringMode=5");
+        psi.ArgumentList.Add($"-Flash=16");
+        psi.ArgumentList.Add($"-WhiteBalance=0");
+        psi.ArgumentList.Add($"-ColorSpace=1");
+        psi.ArgumentList.Add($"-SensingMethod=2");
+        psi.ArgumentList.Add($"-SceneCaptureType=0");
+
+        DateTime ts = ExtractDate(file);
+        string dtStr = ts.ToString("yyyy:MM:dd HH:mm:ss");
+        psi.ArgumentList.Add($"-DateTimeOriginal={dtStr}");
+        psi.ArgumentList.Add($"-CreateDate={dtStr}");
+        psi.ArgumentList.Add($"-ModifyDate={dtStr}");
+
+        if (!preserveGps)
+        {
+            psi.ArgumentList.Add("-gps:all=");
+        }
+
+        psi.ArgumentList.Add(imagePath);
+
+        using var process = System.Diagnostics.Process.Start(psi);
+        if (process != null)
+        {
+            var errTask = process.StandardError.ReadToEndAsync();
+            var outTask = process.StandardOutput.ReadToEndAsync();
+
+            await System.Threading.Tasks.Task.WhenAll(errTask, outTask, process.WaitForExitAsync());
+
+            string errors = errTask.Result;
+            string output = outTask.Result;
+
+            if (process.ExitCode != 0)
+            {
+                string msg = string.IsNullOrWhiteSpace(errors) ? 
+                    (string.IsNullOrWhiteSpace(output) ? "Cierre silencioso con código " + process.ExitCode : output) 
+                    : errors;
+                throw new Exception($"ExifTool error ({process.ExitCode}): {msg}");
+            }
+        }
     }
 
     private static DateTime ExtractDate(FileItem file)

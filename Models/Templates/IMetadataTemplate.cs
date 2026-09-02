@@ -1,4 +1,5 @@
 using ImageMagick;
+using System.Threading.Tasks;
 
 namespace MegaDatos.Models.Templates;
 
@@ -15,4 +16,7 @@ public interface IMetadataTemplate
 
     TemplateComplianceResult ValidateCompliance(FileItem file);
     void Apply(MagickImage image, FileItem file);
+    
+    bool UsesExifTool { get; }
+    Task ApplyWithExifToolAsync(string targetPath, FileItem file);
 }

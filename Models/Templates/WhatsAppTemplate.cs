@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using ImageMagick;
+using System.Threading.Tasks;
 
 namespace MegaDatos.Models.Templates;
 
@@ -90,4 +91,7 @@ public class WhatsAppTemplate : IMetadataTemplate
         image.Strip();
         image.ColorSpace = ColorSpace.sRGB;
     }
+
+    public bool UsesExifTool => false;
+    public Task ApplyWithExifToolAsync(string targetPath, FileItem file) => Task.CompletedTask;
 }

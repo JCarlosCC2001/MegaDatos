@@ -601,6 +601,38 @@ public partial class MainViewModel : ViewModelBase
         }
     }
 
+    partial void OnSelectedFileChanged(FileItem? value)
+    {
+        if (value != null)
+        {
+            HasFileSelected = true;
+            SelectedFileName = value.Name;
+            LoadDemoMetadata(value);
+
+            if (!string.IsNullOrEmpty(value.Resolution) && value.Resolution != "—")
+            {
+                var parts = value.Resolution.Split(new[] { " × ", " px" }, StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length >= 2)
+                {
+                    if (double.TryParse(parts[0].Trim(), out double w) && double.TryParse(parts[1].Trim(), out double h) && h > 0)
+                    {
+                        _originalAspectRatio = w / h;
+                        
+                        _isUpdatingDimensions = true;
+                        TargetWidth = w.ToString();
+                        TargetHeight = h.ToString();
+                        _isUpdatingDimensions = false;
+                    }
+                }
+            }
+        }
+        else
+        {
+            HasFileSelected = false;
+            SelectedFileName = string.Empty;
+        }
+    }
+
     public Func<Task<string?>>? RequestOpenFolderAsync;
     private FileSystemWatcher? _watcher;
 
@@ -620,6 +652,72 @@ public partial class MainViewModel : ViewModelBase
         SelectedPhoneDevice = AvailablePhoneDevices.FirstOrDefault();
 
         Console.WriteLine("MainViewModel: Constructor completed");
+    }
+
+    public void CalculateGpsStatistics()
+    {
+        if (Files == null || Files.Count == 0)
+        {
+            GpsMidpointCoordinates = "—";
+            GpsAverageDistance = "—";
+            return;
+        }
+
+        var filesWithGps = new List<(FileItem file, double lat, double lon)>();
+        foreach (var f in Files)
+        {
+            if (f.GpsDecimal != "—")
+            {
+                var parsed = GpsGeneratorService.ParseCoordinates(f.GpsDecimal);
+                if (parsed.HasValue)
+                {
+                    filesWithGps.Add((f, parsed.Value.Lat, parsed.Value.Lon));
+                }
+            }
+        }
+
+        if (filesWithGps.Count == 0)
+        {
+            GpsMidpointCoordinates = "—";
+            GpsAverageDistance = "—";
+            foreach (var f in Files) f.GpsDistanceToMidpoint = "—";
+            return;
+        }
+
+        double sumLat = 0, sumLon = 0;
+        foreach (var item in filesWithGps)
+        {
+            sumLat += item.lat;
+            sumLon += item.lon;
+        }
+
+        double midLat = sumLat / filesWithGps.Count;
+        double midLon = sumLon / filesWithGps.Count;
+
+        GpsMidpointCoordinates = $"{midLat:F5}°, {midLon:F5}°";
+
+        double totalDistance = 0;
+        foreach (var item in filesWithGps)
+        {
+            double dist = GpsGeneratorService.CalculateHaversineDistance(midLat, midLon, item.lat, item.lon);
+            totalDistance += dist;
+            
+            if (dist < 1000)
+                item.file.GpsDistanceToMidpoint = $"{Math.Round(dist, 1)} m";
+            else
+                item.file.GpsDistanceToMidpoint = $"{Math.Round(dist / 1000.0, 2)} km";
+        }
+
+        foreach (var f in Files.Except(filesWithGps.Select(x => x.file)))
+        {
+            f.GpsDistanceToMidpoint = "—";
+        }
+
+        double avgDist = totalDistance / filesWithGps.Count;
+        if (avgDist < 1000)
+            GpsAverageDistance = $"{Math.Round(avgDist, 1)} m";
+        else
+            GpsAverageDistance = $"{Math.Round(avgDist / 1000.0, 2)} km";
     }
 
     public void EvaluateAllFilesCompliance()
@@ -715,17 +813,153 @@ public partial class MainViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void ConfirmSave(string withBackupStr)
+    private async Task ConfirmSave(object withBackupStr)
     {
-        bool withBackup = bool.Parse(withBackupStr);
+        bool withBackup = withBackupStr?.ToString() == "True";
         IsBackupDialogOpen = false;
-        if (withBackup)
+
+        if (SelectedFile == null) return;
+        StatusText = "Guardando metadatos...";
+
+        string exiftoolPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "exiftool(-k).exe");
+        if (!File.Exists(exiftoolPath))
         {
-            StatusText = "Metadatos guardados (Copia de seguridad .bak creada) ✓";
+            exiftoolPath = Path.Combine(Directory.GetCurrentDirectory(), "Assets", "exiftool(-k).exe");
+        }
+
+        var args = new List<string>();
+        if (!withBackup) args.Add("-overwrite_original");
+
+        // Helper to map UI names to ExifTool tags
+        string MapToExifTag(string group, string key)
+        {
+            if (group == "General")
+            {
+                if (key == "Nombre") return "FileName";
+            }
+            if (group == "GPS")
+            {
+                if (key == "Latitud") return "GPSLatitude";
+                if (key == "Longitud") return "GPSLongitude";
+                if (key == "Altitud") return "GPSAltitude";
+            }
+            if (group == "EXIF")
+            {
+                if (key == "Marca") return "Make";
+                if (key == "Modelo") return "Model";
+                if (key == "Lente") return "LensModel";
+                if (key == "Apertura") return "FNumber";
+                if (key == "Velocidad") return "ExposureTime";
+                if (key == "ISO") return "ISO";
+                if (key == "Distancia Focal") return "FocalLength";
+                if (key == "Flash") return "Flash";
+                if (key == "Modo Exposición") return "ExposureProgram";
+                if (key == "Balance Blancos") return "WhiteBalance";
+            }
+            if (group == "Autoría")
+            {
+                if (key == "Autor") return "Artist"; // or Creator
+                if (key == "Copyright") return "Copyright";
+                if (key == "Software") return "Software";
+                if (key == "Calificación") return "Rating";
+            }
+            if (group == "IPTC/XMP")
+            {
+                if (key == "Título") return "Title";
+                if (key == "Descripción") return "Description";
+                if (key == "Palabras Clave") return "Subject";
+            }
+            return "";
+        }
+
+        var allEntries = GeneralInfo.Concat(GpsData).Concat(ExifData).Concat(IptcData).Concat(AuthorshipData);
+
+        bool changesMade = false;
+        foreach (var entry in allEntries)
+        {
+            if (entry.IsEditable && entry.Value != entry.OriginalValue)
+            {
+                string tag = MapToExifTag(entry.Group, entry.Key);
+                if (!string.IsNullOrEmpty(tag))
+                {
+                    string cleanVal = entry.Value;
+                    if (entry.Key == "Calificación") cleanVal = entry.Value.Count(c => c == '★').ToString();
+                    if (entry.IsGpsCoordinate) cleanVal = cleanVal.Replace("°", "").Trim();
+                    
+                    args.Add($"-{tag}={cleanVal}");
+                    changesMade = true;
+                }
+            }
+        }
+
+        if (changesMade)
+        {
+            try
+            {
+                args.Add(SelectedFile.FullPath);
+
+                var psi = new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = exiftoolPath,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+
+                foreach (var arg in args)
+                {
+                    psi.ArgumentList.Add(arg);
+                }
+
+                int maxRetries = 5;
+                bool success = false;
+                string lastErrors = "";
+                string lastOutput = "";
+                
+                for (int i = 0; i < maxRetries; i++)
+                {
+                    using var process = System.Diagnostics.Process.Start(psi);
+                    if (process != null)
+                    {
+                        var errTask = process.StandardError.ReadToEndAsync();
+                        var outTask = process.StandardOutput.ReadToEndAsync();
+                        
+                        await System.Threading.Tasks.Task.WhenAll(errTask, outTask, process.WaitForExitAsync());
+                        
+                        lastErrors = errTask.Result;
+                        lastOutput = outTask.Result;
+                        
+                        if (process.ExitCode == 0)
+                        {
+                            success = true;
+                            break;
+                        }
+                    }
+                    await System.Threading.Tasks.Task.Delay(500);
+                }
+
+                if (success)
+                {
+                    StatusText = withBackup ? "Metadatos guardados (Copia de seguridad .bak creada) ✓" : "Metadatos guardados (Sin copia de seguridad) ✓";
+                    
+                    string selectedPath = SelectedFile.FullPath;
+                    _ = ReloadFilesFromPathAsync(CurrentPath, selectedPath);
+                }
+                else
+                {
+                    string msg = string.IsNullOrWhiteSpace(lastErrors) ? lastOutput : lastErrors;
+                    StatusText = $"Error al guardar tras reintentos: {msg}";
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusText = $"Error: {ex.Message}";
+            }
         }
         else
         {
-            StatusText = "Metadatos guardados (Sin copia de seguridad) ✓";
+            StatusText = "No se detectaron campos válidos para guardar.";
         }
     }
 
@@ -787,10 +1021,10 @@ public partial class MainViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private async Task ConfirmBatchAsync(string overwriteParam)
+    private async Task ConfirmBatchAsync(object overwriteParam)
     {
         IsConfirmDialogOpen = false;
-        bool overwriteOriginal = overwriteParam == "True";
+        bool overwriteOriginal = overwriteParam?.ToString() == "True";
 
         var filesToProcess = Files.Where(f => f.IsSelected && !f.IsDirectory).ToList();
         if (filesToProcess.Count == 0 && SelectedFile != null && !SelectedFile.IsDirectory)
@@ -808,8 +1042,13 @@ public partial class MainViewModel : ViewModelBase
         {
             int count = 0;
             (double Lat, double Lon)? sharedGps = null;
+            bool hasCriticalError = false;
+            string criticalErrorMessage = "";
+
             foreach (var file in filesToProcess)
             {
+                if (hasCriticalError) break;
+
                 try
                 {
                     if (GetCategoryForExtension(file.Extension) == "Image" || GetCategoryForExtension(file.Extension) == "Raw")
@@ -894,8 +1133,6 @@ public partial class MainViewModel : ViewModelBase
                         }
                         else if (ActiveTool == "Templates" && SelectedTemplate != null)
                         {
-                            SelectedTemplate.Apply(image, file);
-
                             string newName = overwriteOriginal 
                                 ? Path.GetFileName(file.FullPath)
                                 : Path.GetFileNameWithoutExtension(file.FullPath) + $"_{SelectedTemplate.Id.ToLowerInvariant()}" + file.Extension;
@@ -916,13 +1153,29 @@ public partial class MainViewModel : ViewModelBase
 
                             var creationTime = File.GetCreationTime(file.FullPath);
                             var lastWriteTime = File.GetLastWriteTime(file.FullPath);
-                            if (image.Format == MagickFormat.Jpeg || image.Format == MagickFormat.Pjpeg)
-                            {
-                                if (originalInterlace == Interlace.Jpeg) image.Format = MagickFormat.Pjpeg;
-                                else image.Format = MagickFormat.Jpeg;
-                            }
 
-                            image.Write(newPath);
+                            if (SelectedTemplate.UsesExifTool)
+                            {
+                                if (!overwriteOriginal && file.FullPath != newPath)
+                                {
+                                    File.Copy(file.FullPath, newPath, true);
+                                }
+                                
+                                // Free file handle so ExifTool can modify it
+                                image.Dispose(); 
+                                
+                                await SelectedTemplate.ApplyWithExifToolAsync(newPath, file);
+                            }
+                            else
+                            {
+                                SelectedTemplate.Apply(image, file);
+                                if (image.Format == MagickFormat.Jpeg || image.Format == MagickFormat.Pjpeg)
+                                {
+                                    if (originalInterlace == Interlace.Jpeg) image.Format = MagickFormat.Pjpeg;
+                                    else image.Format = MagickFormat.Jpeg;
+                                }
+                                image.Write(newPath);
+                            }
 
                             try
                             {
@@ -933,8 +1186,6 @@ public partial class MainViewModel : ViewModelBase
                         }
                         else if (ActiveTool == "Phone" && SelectedPhoneDevice != null)
                         {
-                            SelectedPhoneDevice.ApplyToImage(image, file, PhoneOverwriteAll, PhonePreserveGps);
-
                             string newName = overwriteOriginal 
                                 ? Path.GetFileName(file.FullPath)
                                 : Path.GetFileNameWithoutExtension(file.FullPath) + $"_{SelectedPhoneDevice.Id}" + file.Extension;
@@ -955,20 +1206,36 @@ public partial class MainViewModel : ViewModelBase
 
                             var creationTime = File.GetCreationTime(file.FullPath);
                             var lastWriteTime = File.GetLastWriteTime(file.FullPath);
-                            if (image.Format == MagickFormat.Jpeg || image.Format == MagickFormat.Pjpeg)
+
+                            // Si no vamos a sobreescribir el original, copiamos la imagen base al nuevo destino primero
+                            if (!overwriteOriginal)
                             {
-                                if (originalInterlace == Interlace.Jpeg) image.Format = MagickFormat.Pjpeg;
-                                else image.Format = MagickFormat.Jpeg;
+                                File.Copy(file.FullPath, newPath, true);
                             }
 
-                            image.Write(newPath);
+                            // Aplicamos ExifTool sobre el archivo de destino (newPath si es copia, file.FullPath si es original)
+                            string targetToProcess = overwriteOriginal ? file.FullPath : newPath;
+                            
+                            // Cerramos MagickImage antes de lanzar ExifTool si comparten el mismo archivo
+                            image.Dispose(); 
 
                             try
                             {
-                                File.SetCreationTime(newPath, creationTime);
-                                File.SetLastWriteTime(newPath, lastWriteTime);
+                                await SelectedPhoneDevice.ApplyWithExifToolAsync(targetToProcess, file, PhoneOverwriteAll, PhonePreserveGps);
+
+                                try
+                                {
+                                    File.SetCreationTime(targetToProcess, creationTime);
+                                    File.SetLastWriteTime(targetToProcess, lastWriteTime);
+                                }
+                                catch { }
                             }
-                            catch { }
+                            catch (Exception ex)
+                            {
+                                hasCriticalError = true;
+                                criticalErrorMessage = ex.Message;
+                                break;
+                            }
                         }
                         else if (ActiveTool == "GpsGen")
                         {
@@ -1045,6 +1312,10 @@ public partial class MainViewModel : ViewModelBase
                                 image.Resize(size);
                                 
                                 // Sincronización forense: Actualizar dimensiones internas en el perfil EXIF
+                                // Nota: Al modificar el perfil EXIF, Magick.NET lo re-serializa por defecto en Little-endian (Intel, II),
+                                // perdiendo el ExifByteOrder original (Big-endian, MM).
+                                // Si se prefiere mantener el ByteOrder original intacto, es mejor no modificar el perfil aquí.
+                                /*
                                 var exif = image.GetExifProfile();
                                 if (exif != null)
                                 {
@@ -1062,6 +1333,7 @@ public partial class MainViewModel : ViewModelBase
 
                                     image.SetProfile(exif);
                                 }
+                                */
 
                                 string newName = overwriteOriginal 
                                     ? Path.GetFileName(file.FullPath)
@@ -1130,14 +1402,21 @@ public partial class MainViewModel : ViewModelBase
                     BatchStatusText = $"Procesando {count}/{filesToProcess.Count}...";
                 });
             }
-        });
 
-        await Dispatcher.UIThread.InvokeAsync(() =>
-        {
-            IsBatchRunning = false;
-            BatchStatusText = "Listo";
-            StatusText = $"Proceso terminado. {filesToProcess.Count} archivos procesados ✓";
-            _ = ReloadFilesFromPathAsync(CurrentPath);
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                IsBatchRunning = false;
+                BatchStatusText = "Listo";
+                if (hasCriticalError)
+                {
+                    StatusText = "❌ Error crítico: " + criticalErrorMessage;
+                }
+                else
+                {
+                    StatusText = $"Proceso terminado. {filesToProcess.Count} archivos procesados ✓";
+                }
+                _ = ReloadFilesFromPathAsync(CurrentPath);
+            });
         });
     }
 
@@ -1198,15 +1477,17 @@ public partial class MainViewModel : ViewModelBase
         ExifData.Clear();
         AuthorshipData.Clear();
 
+        string lat = "";
+        string lon = "";
         if (file.GpsDecimal != "—")
         {
-            GpsData.Add(new() { Key = "Coordenadas (Dec)", Value = file.GpsDecimal, Group = "GPS", IsEditable = false });
-            GpsData.Add(new() { Key = "Coordenadas (DMS)", Value = file.GpsDMS, Group = "GPS", IsEditable = false });
+            var p = file.GpsDecimal.Split(',');
+            lat = p.Length > 0 ? p[0].Trim() : "";
+            lon = p.Length > 1 ? p[1].Trim() : "";
         }
-        else
-        {
-            GpsData.Add(new() { Key = "Coordenadas", Value = "No disponible", Group = "GPS", IsEditable = false });
-        }
+        
+        GpsData.Add(new() { Key = "Latitud", Value = lat, Group = "GPS", IsEditable = true, GpsFormat = SelectedGpsFormat });
+        GpsData.Add(new() { Key = "Longitud", Value = lon, Group = "GPS", IsEditable = true, GpsFormat = SelectedGpsFormat });
 
         string titulo = file.Name;
         string autor = "Desconocido";
@@ -1388,6 +1669,11 @@ public partial class MainViewModel : ViewModelBase
             GpsLongitude = "";
         }
         GpsAltitude = "";
+
+        foreach (var entry in GeneralInfo.Concat(GpsData).Concat(ExifData).Concat(IptcData).Concat(AuthorshipData))
+        {
+            entry.OriginalValue = entry.Value;
+        }
     }
 
     // ===== Safe File System Helpers =====
@@ -1445,6 +1731,7 @@ public partial class MainViewModel : ViewModelBase
             });
 
             HasDirectoryLoaded = true;
+            CalculateGpsStatistics();
             SaveCurrentState();
         }
         catch (Exception ex)
@@ -1592,6 +1879,7 @@ public partial class MainViewModel : ViewModelBase
             }
             StatusText = $"Directorio cargado: {Files.Count} archivos";
             EvaluateAllFilesCompliance();
+            CalculateGpsStatistics();
             SaveCurrentState();
         });
     }
@@ -1643,6 +1931,12 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private string _selectedViewType = "Por defecto";
 
+    [ObservableProperty]
+    private string _gpsMidpointCoordinates = "—";
+
+    [ObservableProperty]
+    private string _gpsAverageDistance = "—";
+
     public ObservableCollection<string> ViewTypes { get; } = new()
     {
         "Por defecto",
@@ -1656,6 +1950,7 @@ public partial class MainViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsResolutionColumnVisible));
         OnPropertyChanged(nameof(IsMegapixelColumnVisible));
         OnPropertyChanged(nameof(IsGpsColumnVisible));
+        OnPropertyChanged(nameof(IsGpsBannerVisible));
         OnPropertyChanged(nameof(IsTemplateColumnVisible));
         OnPropertyChanged(nameof(IsTemplateDetailsColumnVisible));
         OnPropertyChanged(nameof(IsTemplateBannerVisible));
@@ -1673,6 +1968,7 @@ public partial class MainViewModel : ViewModelBase
     public bool IsResolutionColumnVisible => SelectedViewType == "Imágenes";
     public bool IsMegapixelColumnVisible => SelectedViewType == "Imágenes";
     public bool IsGpsColumnVisible => SelectedViewType == "Coordenadas GPS" || SelectedViewType == "Coordenadas";
+    public bool IsGpsBannerVisible => SelectedViewType == "Coordenadas GPS" || SelectedViewType == "Coordenadas";
     public bool IsTemplateColumnVisible => SelectedViewType == "Verificación de Plantilla" || SelectedViewType == "Plantillas / Alertas";
     public bool IsTemplateDetailsColumnVisible => SelectedViewType == "Verificación de Plantilla" || SelectedViewType == "Plantillas / Alertas";
     public bool IsTemplateBannerVisible => SelectedViewType == "Verificación de Plantilla" || SelectedViewType == "Plantillas / Alertas";

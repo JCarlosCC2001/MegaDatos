@@ -31,6 +31,13 @@ public partial class FileItem : ObservableObject
     public string Resolution { get; set; } = "8256 × 5504 px";
     public string GpsDecimal { get; set; } = "—";
     public string GpsDMS { get; set; } = "—";
+    
+    private string _gpsDistanceToMidpoint = "—";
+    public string GpsDistanceToMidpoint
+    {
+        get => _gpsDistanceToMidpoint;
+        set => SetProperty(ref _gpsDistanceToMidpoint, value);
+    }
 
     // ===== Template Compliance Properties =====
     private ComplianceState _templateCompliance = ComplianceState.None;

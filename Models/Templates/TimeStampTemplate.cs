@@ -2,6 +2,8 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 using ImageMagick;
 
 namespace MegaDatos.Models.Templates;
@@ -55,7 +57,11 @@ public class TimeStampTemplate : IMetadataTemplate
             // 2. Check desktop profiles that shouldn't be in a mobile raw timestamp capture
             var xmp = img.GetXmpProfile();
             var iptc = img.GetIptcProfile();
-            if (xmp != null || iptc != null)
+            
+            bool hasXmpData = xmp != null && xmp.ToByteArray().Length > 20;
+            bool hasIptcData = iptc != null && iptc.ToByteArray().Length > 20;
+
+            if (hasXmpData || hasIptcData)
             {
                 result.State = ComplianceState.NonCompliant;
                 result.SummaryMessage = "Contiene perfiles de edición de escritorio (XMP/IPTC) no propios de Timestamp Camera";
@@ -106,37 +112,75 @@ public class TimeStampTemplate : IMetadataTemplate
 
     public void Apply(MagickImage image, FileItem file)
     {
-        // Remove desktop profiles
-        image.RemoveProfile("xmp");
-        image.RemoveProfile("iptc");
+        // No tocar el EXIF aquí, hacerlo todo con ExifTool para no dañar el orden de bytes del GPS
+    }
 
-        var exif = image.GetExifProfile() ?? new ExifProfile();
+    public bool UsesExifTool => true;
 
-        // 1. Inject Timestamp Camera software signature
-        exif.SetValue(ExifTag.Software, "In Timestamp Camera");
+    public async Task ApplyWithExifToolAsync(string targetPath, FileItem file)
+    {
+        var args = new List<string>
+        {
+            "-overwrite_original",
+            "-xmp=",
+            "-iptc=",
+            "-Software=In Timestamp Camera"
+        };
 
-        // 2. Determine timestamp: from filename (e.g. TimePhoto_YYYYMMDD_HHMMSS) or file date
         DateTime timestamp = ExtractDateFromFilenameOrFile(file);
         string dtStr = timestamp.ToString("yyyy:MM:dd HH:mm:ss");
 
-        exif.SetValue(ExifTag.DateTimeOriginal, dtStr);
-        exif.SetValue(ExifTag.DateTimeDigitized, dtStr);
-        exif.SetValue(ExifTag.DateTime, dtStr);
+        args.Add($"-DateTimeOriginal={dtStr}");
+        args.Add($"-DateTimeDigitized={dtStr}");
+        args.Add($"-DateTime={dtStr}");
 
-        // 3. Ensure Mobile Camera Make/Model exists
-        var makeVal = exif.GetValue(ExifTag.Make)?.Value?.ToString();
-        var modelVal = exif.GetValue(ExifTag.Model)?.Value?.ToString();
-        if (string.IsNullOrEmpty(makeVal))
+        args.Add("-Make=Xiaomi");
+        args.Add("-Model=Mobile Camera");
+
+        args.Add(targetPath);
+
+        string exiftoolPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "exiftool(-k).exe");
+        if (!File.Exists(exiftoolPath))
         {
-            exif.SetValue(ExifTag.Make, "Xiaomi");
-        }
-        if (string.IsNullOrEmpty(modelVal))
-        {
-            exif.SetValue(ExifTag.Model, "Mobile Camera");
+            exiftoolPath = Path.Combine(Directory.GetCurrentDirectory(), "Assets", "exiftool(-k).exe");
         }
 
-        image.SetProfile(exif);
+        var psi = new System.Diagnostics.ProcessStartInfo
+        {
+            FileName = exiftoolPath,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
+
+        foreach (var arg in args)
+        {
+            psi.ArgumentList.Add(arg);
+        }
+
+        int maxRetries = 5;
+        for (int i = 0; i < maxRetries; i++)
+        {
+            using var process = System.Diagnostics.Process.Start(psi);
+            if (process != null)
+            {
+                var errTask = process.StandardError.ReadToEndAsync();
+                var outTask = process.StandardOutput.ReadToEndAsync();
+                
+                await Task.WhenAll(errTask, outTask, process.WaitForExitAsync());
+                
+                if (process.ExitCode == 0)
+                {
+                    return; // Éxito
+                }
+            }
+            await Task.Delay(500); // Esperar medio segundo antes de reintentar (útil para errores de ASLR intermitentes)
+        }
+        
+        throw new Exception("ExifTool falló al procesar el archivo después de múltiples intentos.");
     }
+
 
     private static DateTime ExtractDateFromFilenameOrFile(FileItem file)
     {

@@ -9,6 +9,9 @@ public partial class MetadataEntry : ObservableObject
     [ObservableProperty]
     private string _key = string.Empty;
 
+    [ObservableProperty]
+    private string _originalValue = string.Empty;
+
     private string _value = string.Empty;
     public string Value
     {
@@ -64,8 +67,8 @@ public partial class MetadataEntry : ObservableObject
         }
     }
 
-    private double _decimalDegreesValue;
-    public double DecimalDegreesValue
+    private string _decimalDegreesValue = "0";
+    public string DecimalDegreesValue
     {
         get => _decimalDegreesValue;
         set
@@ -77,8 +80,8 @@ public partial class MetadataEntry : ObservableObject
         }
     }
 
-    private int _dmsDegrees;
-    public int DmsDegrees
+    private string _dmsDegrees = "0";
+    public string DmsDegrees
     {
         get => _dmsDegrees;
         set
@@ -90,8 +93,8 @@ public partial class MetadataEntry : ObservableObject
         }
     }
 
-    private int _dmsMinutes;
-    public int DmsMinutes
+    private string _dmsMinutes = "0";
+    public string DmsMinutes
     {
         get => _dmsMinutes;
         set
@@ -103,8 +106,8 @@ public partial class MetadataEntry : ObservableObject
         }
     }
 
-    private double _dmsSeconds;
-    public double DmsSeconds
+    private string _dmsSeconds = "0";
+    public string DmsSeconds
     {
         get => _dmsSeconds;
         set
@@ -177,14 +180,18 @@ public partial class MetadataEntry : ObservableObject
 
             if (double.TryParse(clean, out var decVal))
             {
-                _decimalDegreesValue = Math.Abs(decVal);
+                _decimalDegreesValue = Math.Abs(decVal).ToString();
                 OnPropertyChanged(nameof(DecimalDegreesValue));
 
                 double absVal = Math.Abs(decVal);
-                _dmsDegrees = (int)Math.Truncate(absVal);
-                double minRemainder = (absVal - _dmsDegrees) * 60;
-                _dmsMinutes = (int)Math.Truncate(minRemainder);
-                _dmsSeconds = Math.Round((minRemainder - _dmsMinutes) * 60, 2);
+                int deg = (int)Math.Truncate(absVal);
+                double minRemainder = (absVal - deg) * 60;
+                int min = (int)Math.Truncate(minRemainder);
+                double sec = Math.Round((minRemainder - min) * 60, 2);
+
+                _dmsDegrees = deg.ToString();
+                _dmsMinutes = min.ToString();
+                _dmsSeconds = sec.ToString();
 
                 OnPropertyChanged(nameof(DmsDegrees));
                 OnPropertyChanged(nameof(DmsMinutes));
@@ -198,10 +205,10 @@ public partial class MetadataEntry : ObservableObject
                     double.TryParse(parts[1], out var min) &&
                     double.TryParse(parts[2], out var sec))
                 {
-                    _dmsDegrees = (int)deg;
-                    _dmsMinutes = (int)min;
-                    _dmsSeconds = Math.Round(sec, 2);
-                    _decimalDegreesValue = deg + (min / 60.0) + (sec / 3600.0);
+                    _dmsDegrees = ((int)deg).ToString();
+                    _dmsMinutes = ((int)min).ToString();
+                    _dmsSeconds = Math.Round(sec, 2).ToString();
+                    _decimalDegreesValue = (deg + (min / 60.0) + (sec / 3600.0)).ToString();
 
                     OnPropertyChanged(nameof(DecimalDegreesValue));
                     OnPropertyChanged(nameof(DmsDegrees));
@@ -225,25 +232,36 @@ public partial class MetadataEntry : ObservableObject
         {
             if (GpsFormat == "Decimal")
             {
-                _dmsDegrees = (int)Math.Truncate(_decimalDegreesValue);
-                double minRemainder = (_decimalDegreesValue - _dmsDegrees) * 60;
-                _dmsMinutes = (int)Math.Truncate(minRemainder);
-                _dmsSeconds = Math.Round((minRemainder - _dmsMinutes) * 60, 2);
+                if (double.TryParse(_decimalDegreesValue, out double dec))
+                {
+                    int deg = (int)Math.Truncate(dec);
+                    double minRemainder = (dec - deg) * 60;
+                    int min = (int)Math.Truncate(minRemainder);
+                    double sec = Math.Round((minRemainder - min) * 60, 2);
 
-                OnPropertyChanged(nameof(DmsDegrees));
-                OnPropertyChanged(nameof(DmsMinutes));
-                OnPropertyChanged(nameof(DmsSeconds));
+                    _dmsDegrees = deg.ToString();
+                    _dmsMinutes = min.ToString();
+                    _dmsSeconds = sec.ToString();
 
-                _value = $"{_decimalDegreesValue:F5}° {Hemisphere}";
-                OnPropertyChanged(nameof(Value));
+                    OnPropertyChanged(nameof(DmsDegrees));
+                    OnPropertyChanged(nameof(DmsMinutes));
+                    OnPropertyChanged(nameof(DmsSeconds));
+
+                    _value = $"{dec:F5}° {Hemisphere}";
+                    OnPropertyChanged(nameof(Value));
+                }
             }
             else // DMS format
             {
-                _decimalDegreesValue = _dmsDegrees + (_dmsMinutes / 60.0) + (_dmsSeconds / 3600.0);
-                OnPropertyChanged(nameof(DecimalDegreesValue));
+                if (int.TryParse(_dmsDegrees, out int deg) && int.TryParse(_dmsMinutes, out int min) && double.TryParse(_dmsSeconds, out double sec))
+                {
+                    double dec = deg + (min / 60.0) + (sec / 3600.0);
+                    _decimalDegreesValue = dec.ToString();
+                    OnPropertyChanged(nameof(DecimalDegreesValue));
 
-                _value = $"{_dmsDegrees}° {_dmsMinutes}' {_dmsSeconds:F2}\" {Hemisphere}";
-                OnPropertyChanged(nameof(Value));
+                    _value = $"{deg}° {min}' {sec:F2}\" {Hemisphere}";
+                    OnPropertyChanged(nameof(Value));
+                }
             }
         }
         catch { }

@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using ImageMagick;
+using System.Threading.Tasks;
 
 namespace MegaDatos.Models.Templates;
 
@@ -121,5 +122,10 @@ public class ScreenshotTemplate : IMetadataTemplate
         exif.SetValue(ExifTag.DateTime, nowStr);
 
         image.SetProfile(exif);
+        image.Strip();
+        image.Format = MagickFormat.Png;
     }
+
+    public bool UsesExifTool => false;
+    public Task ApplyWithExifToolAsync(string targetPath, FileItem file) => Task.CompletedTask;
 }
