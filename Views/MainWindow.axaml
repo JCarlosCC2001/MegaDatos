@@ -290,6 +290,40 @@
                                               IsChecked="{Binding KmzIncludePath}" FontSize="9.5" />
                                 </StackPanel>
                             </Border>
+
+                            <Border Background="{DynamicResource BgTertiaryBrush}" CornerRadius="6" Padding="10" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1">
+                                <StackPanel Spacing="6">
+                                    <TextBlock Text="🎯 Comparación y Referencia" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                    <CheckBox Content="Habilitar comparación con coordenada específica" IsChecked="{Binding KmzEnableComparison}" FontSize="9.5" />
+                                    
+                                    <StackPanel IsVisible="{Binding KmzEnableComparison}" Spacing="6" Margin="0,4,0,0">
+                                        <TextBlock Text="Se usará la Referencia GPS del panel superior." FontSize="9" Foreground="{DynamicResource TextTertiaryBrush}" FontStyle="Italic" Margin="0,0,0,4" />
+                                        
+                                        <Grid ColumnDefinitions="Auto,*" Margin="0,4,0,4">
+                                            <CheckBox Grid.Column="0" Content="Incluir punto en KMZ" IsChecked="{Binding KmzIncludeRefPoint}" FontSize="9.5" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="5" IsEnabled="{Binding KmzIncludeRefPoint}" HorizontalAlignment="Right">
+                                                <TextBlock Text="Forma:" VerticalAlignment="Center" FontSize="9.5" />
+                                                <ComboBox ItemsSource="{Binding AvailableKmzRefSymbols}" SelectedItem="{Binding KmzRefSymbol}" FontSize="9.5" Padding="4,2" Width="90" />
+                                            </StackPanel>
+                                        </Grid>
+                                        
+                                        <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,4">
+                                            <CheckBox Grid.Column="0" Content="Dibujar círculo" IsChecked="{Binding KmzDrawCircle}" FontSize="9.5" VerticalAlignment="Center" Margin="0,0,10,0" />
+                                            <TextBox Grid.Column="1" Text="{Binding KmzCircleRadius}" FontSize="9.5" Padding="4,2" IsEnabled="{Binding KmzDrawCircle}" HorizontalAlignment="Stretch" />
+                                            <TextBlock Grid.Column="2" Text="metros" FontSize="9.5" VerticalAlignment="Center" Margin="5,0,0,0" />
+                                        </Grid>
+
+                                        <Border IsVisible="{Binding KmzStatsVisible}" Background="{DynamicResource BgSecondaryBrush}" CornerRadius="4" Padding="8" Margin="0,4,0,0" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1">
+                                            <StackPanel Spacing="4">
+                                                <TextBlock Text="Estadísticas de distancia a la referencia:" FontSize="9.5" FontWeight="SemiBold" />
+                                                <TextBlock Text="{Binding KmzMinDist, StringFormat='Distancia Mínima: {0}'}" FontSize="9.5" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                                <TextBlock Text="{Binding KmzMaxDist, StringFormat='Distancia Máxima: {0}'}" FontSize="9.5" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                                <TextBlock Text="{Binding KmzAvgDist, StringFormat='Distancia Promedio: {0}'}" FontSize="9.5" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                            </StackPanel>
+                                        </Border>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
                             
                             <Button Content="🗺️ Generar Archivo KMZ" 
                                     Command="{Binding GenerateKmzCommand}" 
@@ -736,21 +770,33 @@
                             <!-- Title/Icon -->
                             <StackPanel Orientation="Horizontal" Spacing="6">
                                 <TextBlock Text="🌍" FontSize="12" VerticalAlignment="Center" />
-                                <TextBlock Text="Centroide GPS" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="Referencia GPS" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
                             </StackPanel>
 
-                            <!-- Midpoint Coordinates -->
+                            <!-- Reference Coordinates -->
                             <StackPanel Orientation="Horizontal" Spacing="4">
-                                <TextBlock Text="Coordenadas:" FontSize="10" Foreground="{DynamicResource TextTertiaryBrush}" VerticalAlignment="Center" />
-                                <TextBlock Text="{Binding GpsMidpointCoordinates}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="Lat:" FontSize="10" Foreground="{DynamicResource TextTertiaryBrush}" VerticalAlignment="Center" />
+                                <TextBox Text="{Binding GpsRefLat}" FontSize="9.5" Padding="4,2" MinHeight="20" Width="80" />
+                                <TextBlock Text="Lon:" FontSize="10" Foreground="{DynamicResource TextTertiaryBrush}" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                                <TextBox Text="{Binding GpsRefLon}" FontSize="9.5" Padding="4,2" MinHeight="20" Width="80" />
                             </StackPanel>
 
                             <Border Width="1" Height="14" Background="{DynamicResource BorderSubtleBrush}" VerticalAlignment="Center" />
 
-                            <!-- Average Distance -->
-                            <StackPanel Orientation="Horizontal" Spacing="4">
-                                <TextBlock Text="Promedio de Alejamiento:" FontSize="10" Foreground="{DynamicResource TextTertiaryBrush}" VerticalAlignment="Center" />
-                                <TextBlock Text="{Binding GpsAverageDistance}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                            <!-- Distances -->
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="Mín:" FontSize="10" Foreground="{DynamicResource TextTertiaryBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding GpsMinDistance}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="Máx:" FontSize="10" Foreground="{DynamicResource TextTertiaryBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding GpsMaxDistance}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="Prom:" FontSize="10" Foreground="{DynamicResource TextTertiaryBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding GpsAverageDistance}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                                </StackPanel>
                             </StackPanel>
                         </StackPanel>
                     </Border>

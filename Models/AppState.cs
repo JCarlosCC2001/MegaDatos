@@ -46,6 +46,11 @@ public class AppState
     public bool KmzIncludePath { get; set; } = false;
     public bool KmzIncludeDate { get; set; } = true;
     public bool KmzIncludeFilename { get; set; } = true;
+    public bool KmzEnableComparison { get; set; } = false;
+    public bool KmzIncludeRefPoint { get; set; } = true;
+    public string KmzRefSymbol { get; set; } = "Estrella";
+    public bool KmzDrawCircle { get; set; } = true;
+    public string KmzCircleRadius { get; set; } = "1000";
 
     // Window geometry & state
     public string WindowState { get; set; } = "Maximized";

@@ -342,6 +342,44 @@ public partial class MainViewModel : ViewModelBase
     partial void OnKmzIncludeFilenameChanged(bool value) => SaveCurrentState();
 
     [ObservableProperty]
+    private bool _kmzEnableComparison = false;
+    partial void OnKmzEnableComparisonChanged(bool value) { SaveCurrentState(); KmzStatsVisible = false; }
+
+
+    [ObservableProperty]
+    private bool _kmzIncludeRefPoint = true;
+    partial void OnKmzIncludeRefPointChanged(bool value) => SaveCurrentState();
+
+    public ObservableCollection<string> AvailableKmzRefSymbols { get; } = new()
+    {
+        "Estrella", "Círculo", "Chincheta", "Cuadrado", "Triángulo"
+    };
+
+    [ObservableProperty]
+    private string _kmzRefSymbol = "Estrella";
+    partial void OnKmzRefSymbolChanged(string value) => SaveCurrentState();
+
+    [ObservableProperty]
+    private bool _kmzDrawCircle = true;
+    partial void OnKmzDrawCircleChanged(bool value) => SaveCurrentState();
+
+    [ObservableProperty]
+    private string _kmzCircleRadius = "1000";
+    partial void OnKmzCircleRadiusChanged(string value) => SaveCurrentState();
+
+    [ObservableProperty]
+    private bool _kmzStatsVisible = false;
+
+    [ObservableProperty]
+    private string _kmzMinDist = string.Empty;
+
+    [ObservableProperty]
+    private string _kmzMaxDist = string.Empty;
+
+    [ObservableProperty]
+    private string _kmzAvgDist = string.Empty;
+
+    [ObservableProperty]
     private string _gpsGenPreviewLat = string.Empty;
 
     [ObservableProperty]
@@ -685,70 +723,125 @@ public partial class MainViewModel : ViewModelBase
         Console.WriteLine("MainViewModel: Constructor completed");
     }
 
-    public void CalculateGpsStatistics()
-    {
-        if (Files == null || Files.Count == 0)
-        {
-            GpsMidpointCoordinates = "—";
-            GpsAverageDistance = "—";
-            return;
-        }
+    private bool _isCalculatingGps = false;
 
-        var filesWithGps = new List<(FileItem file, double lat, double lon)>();
-        foreach (var f in Files)
+    public void CalculateGpsStatistics(bool useCustomRef = false)
+    {
+        if (_isCalculatingGps) return;
+        _isCalculatingGps = true;
+
+        try
         {
-            if (f.GpsDecimal != "—")
+            if (Files == null || Files.Count == 0)
             {
-                var parsed = GpsGeneratorService.ParseCoordinates(f.GpsDecimal);
-                if (parsed.HasValue)
+                if (!useCustomRef)
                 {
-                    filesWithGps.Add((f, parsed.Value.Lat, parsed.Value.Lon));
+                    GpsRefLat = "—";
+                    GpsRefLon = "—";
+                }
+                GpsMinDistance = "—";
+                GpsMaxDistance = "—";
+                GpsAverageDistance = "—";
+                return;
+            }
+
+            var filesWithGps = new List<(FileItem file, double lat, double lon)>();
+            foreach (var f in Files)
+            {
+                if (f.GpsDecimal != "—")
+                {
+                    var parsed = GpsGeneratorService.ParseCoordinates(f.GpsDecimal);
+                    if (parsed.HasValue)
+                    {
+                        filesWithGps.Add((f, parsed.Value.Lat, parsed.Value.Lon));
+                    }
                 }
             }
-        }
 
-        if (filesWithGps.Count == 0)
-        {
-            GpsMidpointCoordinates = "—";
-            GpsAverageDistance = "—";
-            foreach (var f in Files) f.GpsDistanceToMidpoint = "—";
-            return;
-        }
+            if (filesWithGps.Count == 0)
+            {
+                if (!useCustomRef)
+                {
+                    GpsRefLat = "—";
+                    GpsRefLon = "—";
+                }
+                GpsMinDistance = "—";
+                GpsMaxDistance = "—";
+                GpsAverageDistance = "—";
+                foreach (var f in Files) f.GpsDistanceToMidpoint = "—";
+                return;
+            }
 
-        double sumLat = 0, sumLon = 0;
-        foreach (var item in filesWithGps)
-        {
-            sumLat += item.lat;
-            sumLon += item.lon;
-        }
+            double refLat = 0, refLon = 0;
 
-        double midLat = sumLat / filesWithGps.Count;
-        double midLon = sumLon / filesWithGps.Count;
+            if (!useCustomRef)
+            {
+                double sumLat = 0, sumLon = 0;
+                foreach (var item in filesWithGps)
+                {
+                    sumLat += item.lat;
+                    sumLon += item.lon;
+                }
 
-        GpsMidpointCoordinates = $"{midLat:F5}°, {midLon:F5}°";
+                refLat = sumLat / filesWithGps.Count;
+                refLon = sumLon / filesWithGps.Count;
 
-        double totalDistance = 0;
-        foreach (var item in filesWithGps)
-        {
-            double dist = GpsGeneratorService.CalculateHaversineDistance(midLat, midLon, item.lat, item.lon);
-            totalDistance += dist;
-            
-            if (dist < 1000)
-                item.file.GpsDistanceToMidpoint = $"{Math.Round(dist, 1)} m";
+                GpsRefLat = refLat.ToString("F6", System.Globalization.CultureInfo.InvariantCulture);
+                GpsRefLon = refLon.ToString("F6", System.Globalization.CultureInfo.InvariantCulture);
+            }
             else
-                item.file.GpsDistanceToMidpoint = $"{Math.Round(dist / 1000.0, 2)} km";
-        }
+            {
+                // Attempt to parse custom coordinates
+                var parsed = GpsGeneratorService.ParseCoordinates($"{GpsRefLat}, {GpsRefLon}");
+                if (parsed.HasValue)
+                {
+                    refLat = parsed.Value.Lat;
+                    refLon = parsed.Value.Lon;
+                }
+                else
+                {
+                    // Invalid input, clear stats
+                    GpsMinDistance = "—";
+                    GpsMaxDistance = "—";
+                    GpsAverageDistance = "—";
+                    foreach (var f in Files) f.GpsDistanceToMidpoint = "—";
+                    return;
+                }
+            }
 
-        foreach (var f in Files.Except(filesWithGps.Select(x => x.file)))
+            double totalDistance = 0;
+            double minDist = double.MaxValue;
+            double maxDist = double.MinValue;
+
+            foreach (var item in filesWithGps)
+            {
+                double dist = GpsGeneratorService.CalculateHaversineDistance(refLat, refLon, item.lat, item.lon);
+                totalDistance += dist;
+                
+                if (dist < minDist) minDist = dist;
+                if (dist > maxDist) maxDist = dist;
+                
+                if (dist < 1000)
+                    item.file.GpsDistanceToMidpoint = $"{Math.Round(dist, 1)} m";
+                else
+                    item.file.GpsDistanceToMidpoint = $"{Math.Round(dist / 1000.0, 2)} km";
+            }
+
+            foreach (var f in Files.Except(filesWithGps.Select(x => x.file)))
+            {
+                f.GpsDistanceToMidpoint = "—";
+            }
+
+            double avgDist = totalDistance / filesWithGps.Count;
+            
+            GpsMinDistance = minDist < 1000 ? $"{Math.Round(minDist, 1)} m" : $"{Math.Round(minDist / 1000.0, 2)} km";
+            GpsMaxDistance = maxDist < 1000 ? $"{Math.Round(maxDist, 1)} m" : $"{Math.Round(maxDist / 1000.0, 2)} km";
+            GpsAverageDistance = avgDist < 1000 ? $"{Math.Round(avgDist, 1)} m" : $"{Math.Round(avgDist / 1000.0, 2)} km";
+        }
+        finally
         {
-            f.GpsDistanceToMidpoint = "—";
+            _isCalculatingGps = false;
         }
-
-        double avgDist = totalDistance / filesWithGps.Count;
-        if (avgDist < 1000)
-            GpsAverageDistance = $"{Math.Round(avgDist, 1)} m";
-        else
-            GpsAverageDistance = $"{Math.Round(avgDist / 1000.0, 2)} km";
     }
 
     public void EvaluateAllFilesCompliance()
@@ -843,6 +936,60 @@ public partial class MainViewModel : ViewModelBase
 
         if (RequestSaveKmzAsync == null) return;
 
+        double refLat = 0, refLon = 0;
+        bool hasValidRef = false;
+        
+        if (KmzEnableComparison)
+        {
+            var parsed = GpsGeneratorService.ParseCoordinates($"{GpsRefLat}, {GpsRefLon}");
+            if (parsed.HasValue)
+            {
+                refLat = parsed.Value.Lat;
+                refLon = parsed.Value.Lon;
+                hasValidRef = true;
+                
+                double minDist = double.MaxValue;
+                double maxDist = double.MinValue;
+                double sumDist = 0;
+                int count = 0;
+                
+                foreach(var file in selectedFilesWithGps)
+                {
+                    var fileGps = GpsGeneratorService.ParseCoordinates(file.GpsDecimal);
+                    if(fileGps.HasValue)
+                    {
+                        double dist = GpsGeneratorService.CalculateHaversineDistance(refLat, refLon, fileGps.Value.Lat, fileGps.Value.Lon);
+                        if (dist < minDist) minDist = dist;
+                        if (dist > maxDist) maxDist = dist;
+                        sumDist += dist;
+                        count++;
+                    }
+                }
+                
+                if (count > 0)
+                {
+                    double avgDist = sumDist / count;
+                    KmzMinDist = minDist < 1000 ? $"{Math.Round(minDist, 1)} m" : $"{Math.Round(minDist / 1000.0, 2)} km";
+                    KmzMaxDist = maxDist < 1000 ? $"{Math.Round(maxDist, 1)} m" : $"{Math.Round(maxDist / 1000.0, 2)} km";
+                    KmzAvgDist = avgDist < 1000 ? $"{Math.Round(avgDist, 1)} m" : $"{Math.Round(avgDist / 1000.0, 2)} km";
+                    KmzStatsVisible = true;
+                }
+                else
+                {
+                    KmzStatsVisible = false;
+                }
+            }
+            else
+            {
+                StatusText = "La coordenada de referencia no es válida.";
+                return;
+            }
+        }
+        else
+        {
+            KmzStatsVisible = false;
+        }
+
         var savePath = await RequestSaveKmzAsync();
         if (string.IsNullOrEmpty(savePath)) return;
 
@@ -850,7 +997,7 @@ public partial class MainViewModel : ViewModelBase
         {
             StatusText = $"Generando KMZ con {selectedFilesWithGps.Count} ubicaciones...";
 
-            string kmlContent = GenerateKmlContent(selectedFilesWithGps);
+            string kmlContent = GenerateKmlContent(selectedFilesWithGps, hasValidRef, refLat, refLon);
 
             using (var fs = new FileStream(savePath, FileMode.Create))
             using (var archive = new System.IO.Compression.ZipArchive(fs, System.IO.Compression.ZipArchiveMode.Create))
@@ -871,7 +1018,20 @@ public partial class MainViewModel : ViewModelBase
         }
     }
 
-    private string GenerateKmlContent(List<FileItem> files)
+    private string GetRefSymbolUrl()
+    {
+        return KmzRefSymbol switch
+        {
+            "Estrella" => "http://maps.google.com/mapfiles/kml/shapes/star.png",
+            "Círculo" => "http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png",
+            "Chincheta" => "http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png",
+            "Cuadrado" => "http://maps.google.com/mapfiles/kml/shapes/placemark_square.png",
+            "Triángulo" => "http://maps.google.com/mapfiles/kml/shapes/triangle.png",
+            _ => "http://maps.google.com/mapfiles/kml/shapes/star.png"
+        };
+    }
+
+    private string GenerateKmlContent(List<FileItem> files, bool hasRef = false, double refLat = 0, double refLon = 0)
     {
         var sb = new System.Text.StringBuilder();
         sb.AppendLine("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
@@ -894,7 +1054,7 @@ public partial class MainViewModel : ViewModelBase
         sb.AppendLine("    <Style id=\"customStyle\">");
         sb.AppendLine("      <IconStyle>");
         sb.AppendLine($"        <color>{kmlColor}</color>");
-        sb.AppendLine("        <scale>1.1</scale>");
+        sb.AppendLine("        <scale>1.0</scale>");
         sb.AppendLine("        <Icon>");
         sb.AppendLine($"          <href>{iconUrl}</href>");
         sb.AppendLine("        </Icon>");
@@ -904,6 +1064,68 @@ public partial class MainViewModel : ViewModelBase
         sb.AppendLine("        <width>3</width>");
         sb.AppendLine("      </LineStyle>");
         sb.AppendLine("    </Style>");
+
+        if (hasRef && KmzEnableComparison)
+        {
+            if (KmzIncludeRefPoint)
+            {
+                sb.AppendLine("    <Placemark>");
+                sb.AppendLine("      <name>Coordenada de Referencia</name>");
+                sb.AppendLine("      <Style>");
+                sb.AppendLine("        <IconStyle>");
+                sb.AppendLine("          <color>ff00ffff</color>"); // Yellow
+                sb.AppendLine("          <scale>1.5</scale>");
+                sb.AppendLine("          <Icon>");
+                sb.AppendLine($"            <href>{GetRefSymbolUrl()}</href>");
+                sb.AppendLine("          </Icon>");
+                sb.AppendLine("        </IconStyle>");
+                sb.AppendLine("      </Style>");
+                sb.AppendLine("      <Point>");
+                sb.AppendLine($"        <coordinates>{refLon.ToString(System.Globalization.CultureInfo.InvariantCulture)},{refLat.ToString(System.Globalization.CultureInfo.InvariantCulture)}</coordinates>");
+                sb.AppendLine("      </Point>");
+                sb.AppendLine("    </Placemark>");
+            }
+
+            if (KmzDrawCircle && double.TryParse(KmzCircleRadius.Replace(',', '.'), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out double radius) && radius > 0)
+            {
+                sb.AppendLine("    <Placemark>");
+                sb.AppendLine($"      <name>Radio de {radius} m</name>");
+                sb.AppendLine("      <Style>");
+                sb.AppendLine("        <LineStyle>");
+                sb.AppendLine("          <color>8800ffff</color>");
+                sb.AppendLine("          <width>2</width>");
+                sb.AppendLine("        </LineStyle>");
+                sb.AppendLine("        <PolyStyle>");
+                sb.AppendLine("          <color>3300ffff</color>");
+                sb.AppendLine("        </PolyStyle>");
+                sb.AppendLine("      </Style>");
+                sb.AppendLine("      <Polygon>");
+                sb.AppendLine("        <outerBoundaryIs>");
+                sb.AppendLine("          <LinearRing>");
+                sb.AppendLine("            <coordinates>");
+                
+                for (int i = 0; i <= 360; i += 10)
+                {
+                    double angle = i * (Math.PI / 180.0);
+                    double deltaLat = (radius * Math.Cos(angle)) / 111139.0;
+                    double centerLatRad = refLat * (Math.PI / 180.0);
+                    double cosLat = Math.Cos(centerLatRad);
+                    if (Math.Abs(cosLat) < 1e-6) cosLat = 1e-6;
+                    double deltaLon = (radius * Math.Sin(angle)) / (111139.0 * cosLat);
+                    
+                    double newLat = Math.Clamp(refLat + deltaLat, -90.0, 90.0);
+                    double newLon = Math.Clamp(refLon + deltaLon, -180.0, 180.0);
+                    
+                    sb.AppendLine($"              {newLon.ToString(System.Globalization.CultureInfo.InvariantCulture)},{newLat.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
+                }
+                
+                sb.AppendLine("            </coordinates>");
+                sb.AppendLine("          </LinearRing>");
+                sb.AppendLine("        </outerBoundaryIs>");
+                sb.AppendLine("      </Polygon>");
+                sb.AppendLine("    </Placemark>");
+            }
+        }
 
         var sortedFiles = files.OrderBy(f => f.DateModified).ToList();
         var validCoordinates = new List<string>();
@@ -2107,10 +2329,17 @@ public partial class MainViewModel : ViewModelBase
         _watcher.Created += OnFileSystemChanged;
         _watcher.Deleted += OnFileSystemChanged;
         _watcher.Renamed += OnFileSystemChanged;
+        _watcher.Changed += OnFileSystemChanged;
     }
+
+    private DateTime _lastReload = DateTime.MinValue;
 
     private void OnFileSystemChanged(object sender, FileSystemEventArgs e)
     {
+        // Debounce para evitar recargas múltiples al guardar un archivo (FileSystemWatcher dispara varios eventos)
+        if ((DateTime.Now - _lastReload).TotalMilliseconds < 500) return;
+        _lastReload = DateTime.Now;
+
         Dispatcher.UIThread.InvokeAsync(() => 
         {
             _ = ReloadFilesFromPathAsync(CurrentPath);
@@ -2143,7 +2372,18 @@ public partial class MainViewModel : ViewModelBase
     private string _selectedViewType = "Por defecto";
 
     [ObservableProperty]
-    private string _gpsMidpointCoordinates = "—";
+    private string _gpsRefLat = "—";
+    partial void OnGpsRefLatChanged(string value) => CalculateGpsStatistics(true);
+
+    [ObservableProperty]
+    private string _gpsRefLon = "—";
+    partial void OnGpsRefLonChanged(string value) => CalculateGpsStatistics(true);
+
+    [ObservableProperty]
+    private string _gpsMinDistance = "—";
+
+    [ObservableProperty]
+    private string _gpsMaxDistance = "—";
 
     [ObservableProperty]
     private string _gpsAverageDistance = "—";
