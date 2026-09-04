@@ -41,6 +41,12 @@ public class AppState
     public bool GpsGenUniquePerPhoto { get; set; } = true;
     public string GpsGenBaseAltitude { get; set; } = "3250";
 
+    // KMZ Export tool state
+    public string KmzMarkerColor { get; set; } = "Rojo";
+    public bool KmzIncludePath { get; set; } = false;
+    public bool KmzIncludeDate { get; set; } = true;
+    public bool KmzIncludeFilename { get; set; } = true;
+
     // Window geometry & state
     public string WindowState { get; set; } = "Maximized";
     public double? WindowWidth { get; set; }

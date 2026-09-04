@@ -32,6 +32,7 @@ public partial class MainViewModel : ViewModelBase
     public bool IsCleanActive => ActiveTool == "Clean";
     public bool IsFormatActive => ActiveTool == "Format";
     public bool IsResizeActive => ActiveTool == "Resize";
+    public bool IsKmzExportActive => ActiveTool == "KmzExport";
 
     partial void OnActiveToolChanged(string value)
     {
@@ -42,6 +43,7 @@ public partial class MainViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsCleanActive));
         OnPropertyChanged(nameof(IsFormatActive));
         OnPropertyChanged(nameof(IsResizeActive));
+        OnPropertyChanged(nameof(IsKmzExportActive));
         StatusText = $"Herramienta activa: {value}";
         SaveCurrentState();
 
@@ -58,6 +60,7 @@ public partial class MainViewModel : ViewModelBase
 
     [ObservableProperty]
     private string _currentPath = string.Empty;
+    public string RootDirectory { get; private set; } = string.Empty;
 
     // ===== File Explorer =====
     [ObservableProperty]
@@ -73,12 +76,16 @@ public partial class MainViewModel : ViewModelBase
         get => _areAllFilesSelected;
         set
         {
+            // When user clicks the checkbox and current state is null (indeterminate),
+            // force it to true (select all)
+            if (!value.HasValue) value = true;
+            
             if (_areAllFilesSelected != value)
             {
                 _areAllFilesSelected = value;
                 OnPropertyChanged(nameof(AreAllFilesSelected));
 
-                if (!_isUpdatingSelectAll && value.HasValue && Files != null)
+                if (!_isUpdatingSelectAll && Files != null)
                 {
                     _isUpdatingSelectAll = true;
                     bool select = value.Value;
@@ -310,6 +317,29 @@ public partial class MainViewModel : ViewModelBase
     private string _gpsGenBaseAltitude = "3250";
 
     partial void OnGpsGenBaseAltitudeChanged(string value) => SaveCurrentState();
+
+    // ===== KMZ Export Tool =====
+    public ObservableCollection<string> AvailableKmzColors { get; } = new()
+    {
+        "Rojo", "Azul", "Verde", "Amarillo", "Blanco"
+    };
+
+    [ObservableProperty]
+    private string _kmzMarkerColor = "Rojo";
+
+    [ObservableProperty]
+    private bool _kmzIncludePath = false;
+
+    [ObservableProperty]
+    private bool _kmzIncludeDate = true;
+
+    [ObservableProperty]
+    private bool _kmzIncludeFilename = true;
+
+    partial void OnKmzMarkerColorChanged(string value) => SaveCurrentState();
+    partial void OnKmzIncludePathChanged(bool value) => SaveCurrentState();
+    partial void OnKmzIncludeDateChanged(bool value) => SaveCurrentState();
+    partial void OnKmzIncludeFilenameChanged(bool value) => SaveCurrentState();
 
     [ObservableProperty]
     private string _gpsGenPreviewLat = string.Empty;
@@ -634,6 +664,7 @@ public partial class MainViewModel : ViewModelBase
     }
 
     public Func<Task<string?>>? RequestOpenFolderAsync;
+    public Func<Task<string?>>? RequestSaveKmzAsync;
     private FileSystemWatcher? _watcher;
 
     public MainViewModel()
@@ -786,7 +817,7 @@ public partial class MainViewModel : ViewModelBase
         ActiveTool = toolName;
     }
 
-    [RelayCommand]
+    [RelayCommand(AllowConcurrentExecutions = true)]
     private async Task OpenFolder()
     {
         if (RequestOpenFolderAsync != null)
@@ -797,6 +828,146 @@ public partial class MainViewModel : ViewModelBase
                 LoadRealData(folder);
             }
         }
+    }
+
+    [RelayCommand(AllowConcurrentExecutions = true)]
+    private async Task GenerateKmz()
+    {
+        var selectedFilesWithGps = Files?.Where(f => f.IsSelected && !string.IsNullOrEmpty(f.GpsDecimal) && f.GpsDecimal != "—").ToList();
+
+        if (selectedFilesWithGps == null || selectedFilesWithGps.Count == 0)
+        {
+            StatusText = "No hay archivos seleccionados con coordenadas GPS válidas.";
+            return;
+        }
+
+        if (RequestSaveKmzAsync == null) return;
+
+        var savePath = await RequestSaveKmzAsync();
+        if (string.IsNullOrEmpty(savePath)) return;
+
+        try
+        {
+            StatusText = $"Generando KMZ con {selectedFilesWithGps.Count} ubicaciones...";
+
+            string kmlContent = GenerateKmlContent(selectedFilesWithGps);
+
+            using (var fs = new FileStream(savePath, FileMode.Create))
+            using (var archive = new System.IO.Compression.ZipArchive(fs, System.IO.Compression.ZipArchiveMode.Create))
+            {
+                var kmlEntry = archive.CreateEntry("doc.kml");
+                using (var entryStream = kmlEntry.Open())
+                using (var writer = new StreamWriter(entryStream, System.Text.Encoding.UTF8))
+                {
+                    await writer.WriteAsync(kmlContent);
+                }
+            }
+
+            StatusText = $"KMZ guardado exitosamente en: {Path.GetFileName(savePath)}";
+        }
+        catch (Exception ex)
+        {
+            StatusText = $"Error al generar KMZ: {ex.Message}";
+        }
+    }
+
+    private string GenerateKmlContent(List<FileItem> files)
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+        sb.AppendLine("<kml xmlns=\"http://www.opengis.net/kml/2.2\">");
+        sb.AppendLine("  <Document>");
+        sb.AppendLine("    <name>Exportación KMZ MegaDatos</name>");
+
+        string kmlColor = KmzMarkerColor switch
+        {
+            "Rojo" => "ff0000ff",
+            "Azul" => "ffff0000",
+            "Verde" => "ff00ff00",
+            "Amarillo" => "ff00ffff",
+            "Blanco" => "ffffffff",
+            _ => "ff0000ff"
+        };
+
+        string iconUrl = "http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png";
+
+        sb.AppendLine("    <Style id=\"customStyle\">");
+        sb.AppendLine("      <IconStyle>");
+        sb.AppendLine($"        <color>{kmlColor}</color>");
+        sb.AppendLine("        <scale>1.1</scale>");
+        sb.AppendLine("        <Icon>");
+        sb.AppendLine($"          <href>{iconUrl}</href>");
+        sb.AppendLine("        </Icon>");
+        sb.AppendLine("      </IconStyle>");
+        sb.AppendLine("      <LineStyle>");
+        sb.AppendLine($"        <color>{kmlColor}</color>");
+        sb.AppendLine("        <width>3</width>");
+        sb.AppendLine("      </LineStyle>");
+        sb.AppendLine("    </Style>");
+
+        var sortedFiles = files.OrderBy(f => f.DateModified).ToList();
+        var validCoordinates = new List<string>();
+
+        foreach (var file in sortedFiles)
+        {
+            var parts = file.GpsDecimal.Split(',');
+            if (parts.Length == 2 && 
+                double.TryParse(parts[0].Trim(), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double lat) &&
+                double.TryParse(parts[1].Trim(), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double lon))
+            {
+                string coord = $"{lon.ToString(System.Globalization.CultureInfo.InvariantCulture)},{lat.ToString(System.Globalization.CultureInfo.InvariantCulture)}";
+                validCoordinates.Add(coord);
+
+                sb.AppendLine("    <Placemark>");
+                
+                string title = KmzIncludeFilename ? EscapeXml(file.Name) : "Marcador";
+                sb.AppendLine($"      <name>{title}</name>");
+                sb.AppendLine("      <styleUrl>#customStyle</styleUrl>");
+                
+                if (KmzIncludeDate)
+                {
+                    string dateStr = file.DateModified.ToString("yyyy-MM-dd HH:mm:ss");
+                    sb.AppendLine($"      <description>Fecha: {dateStr}</description>");
+                }
+                
+                sb.AppendLine("      <Point>");
+                sb.AppendLine($"        <coordinates>{coord}</coordinates>");
+                sb.AppendLine("      </Point>");
+                sb.AppendLine("    </Placemark>");
+            }
+        }
+
+        if (KmzIncludePath && validCoordinates.Count > 1)
+        {
+            sb.AppendLine("    <Placemark>");
+            sb.AppendLine("      <name>Ruta (Trazo de Recorrido)</name>");
+            sb.AppendLine("      <styleUrl>#customStyle</styleUrl>");
+            sb.AppendLine("      <LineString>");
+            sb.AppendLine("        <tessellate>1</tessellate>");
+            sb.AppendLine("        <coordinates>");
+            foreach (var coord in validCoordinates)
+            {
+                sb.AppendLine($"          {coord}");
+            }
+            sb.AppendLine("        </coordinates>");
+            sb.AppendLine("      </LineString>");
+            sb.AppendLine("    </Placemark>");
+        }
+
+        sb.AppendLine("  </Document>");
+        sb.AppendLine("</kml>");
+        
+        return sb.ToString();
+    }
+
+    private string EscapeXml(string unescaped)
+    {
+        if (string.IsNullOrEmpty(unescaped)) return string.Empty;
+        return unescaped.Replace("&", "&amp;")
+                        .Replace("<", "&lt;")
+                        .Replace(">", "&gt;")
+                        .Replace("\"", "&quot;")
+                        .Replace("'", "&apos;");
     }
 
     [RelayCommand]
@@ -812,7 +983,7 @@ public partial class MainViewModel : ViewModelBase
         IsBackupDialogOpen = true;
     }
 
-    [RelayCommand]
+    [RelayCommand(AllowConcurrentExecutions = true)]
     private async Task ConfirmSave(object withBackupStr)
     {
         bool withBackup = withBackupStr?.ToString() == "True";
@@ -884,9 +1055,44 @@ public partial class MainViewModel : ViewModelBase
                 {
                     string cleanVal = entry.Value;
                     if (entry.Key == "Calificación") cleanVal = entry.Value.Count(c => c == '★').ToString();
-                    if (entry.IsGpsCoordinate) cleanVal = cleanVal.Replace("°", "").Trim();
                     
-                    args.Add($"-{tag}={cleanVal}");
+                    if (entry.IsGpsCoordinate)
+                    {
+                        // Extract hemisphere from the MetadataEntry
+                        string hem = entry.Hemisphere;
+                        
+                        // Get the absolute numeric value
+                        string numericVal = cleanVal
+                            .Replace("°", "").Replace("'", "").Replace("\"", "")
+                            .Replace("N", "").Replace("S", "").Replace("E", "").Replace("W", "")
+                            .Trim();
+                        
+                        // Send the coordinate value as positive (absolute)
+                        if (double.TryParse(numericVal, System.Globalization.NumberStyles.Any, 
+                            System.Globalization.CultureInfo.InvariantCulture, out double coordVal))
+                        {
+                            numericVal = Math.Abs(coordVal).ToString(System.Globalization.CultureInfo.InvariantCulture);
+                        }
+                        
+                        args.Add($"-{tag}={numericVal}");
+                        
+                        // Send the hemisphere reference tag
+                        if (entry.Key == "Latitud")
+                        {
+                            string latRef = (hem == "S") ? "S" : "N";
+                            args.Add($"-GPSLatitudeRef={latRef}");
+                        }
+                        else if (entry.Key == "Longitud")
+                        {
+                            string lonRef = (hem == "W") ? "W" : "E";
+                            args.Add($"-GPSLongitudeRef={lonRef}");
+                        }
+                    }
+                    else
+                    {
+                        args.Add($"-{tag}={cleanVal}");
+                    }
+                    
                     changesMade = true;
                 }
             }
@@ -1020,7 +1226,7 @@ public partial class MainViewModel : ViewModelBase
         IsConfirmDialogOpen = false;
     }
 
-    [RelayCommand]
+    [RelayCommand(AllowConcurrentExecutions = true)]
     private async Task ConfirmBatchAsync(object overwriteParam)
     {
         IsConfirmDialogOpen = false;
@@ -1058,6 +1264,10 @@ public partial class MainViewModel : ViewModelBase
 
                         if (ActiveTool == "Clean")
                         {
+                            // Rotar físicamente los píxeles basados en la etiqueta EXIF de orientación
+                            // ANTES de borrar los metadatos, para que la imagen no quede volteada.
+                            image.AutoOrient();
+
                             if (CleanAllMetadata)
                             {
                                 image.Strip();
@@ -1705,6 +1915,7 @@ public partial class MainViewModel : ViewModelBase
     // ===== Real FileSystem Data =====
     public async void LoadRealData(string path, string? targetFileToSelect = null)
     {
+        RootDirectory = path;
         CurrentPath = path;
         _pendingSelectedFile = targetFileToSelect;
         StatusText = $"Cargando {path}...";
@@ -1981,7 +2192,7 @@ public partial class MainViewModel : ViewModelBase
     {
         return new AppState
         {
-            LastDirectory = !string.IsNullOrEmpty(CurrentPath) && Directory.Exists(CurrentPath) ? CurrentPath : null,
+            LastDirectory = !string.IsNullOrEmpty(RootDirectory) && Directory.Exists(RootDirectory) ? RootDirectory : null,
             LastSelectedFile = SelectedFile?.FullPath,
             ActiveTool = ActiveTool,
             SelectedViewType = SelectedViewType,

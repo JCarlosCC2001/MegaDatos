@@ -43,6 +43,21 @@ public partial class App : Application
                 return result.Count > 0 ? result[0].TryGetLocalPath() : null;
             };
 
+            vm.RequestSaveKmzAsync = async () =>
+            {
+                var result = await mainWindow.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+                {
+                    Title = "Guardar archivo KMZ",
+                    DefaultExtension = "kmz",
+                    SuggestedFileName = "Coordenadas.kmz",
+                    FileTypeChoices = new[]
+                    {
+                        new FilePickerFileType("Archivos KMZ (*.kmz)") { Patterns = new[] { "*.kmz" } }
+                    }
+                });
+                return result?.TryGetLocalPath();
+            };
+
             desktop.MainWindow = mainWindow;
             
             // Cargar estado previo en el ViewModel

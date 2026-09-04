@@ -172,6 +172,13 @@
                                 Command="{Binding NavigateToolCommand}"
                                 CommandParameter="GpsGen"
                                 ToolTip.Tip="Generador de Coordenadas GPS (Radio de Variación)" />
+                        <!-- Generate KMZ -->
+                        <Button Classes="activity-btn"
+                                Classes.active="{Binding IsKmzExportActive}"
+                                Content="🗺️"
+                                Command="{Binding NavigateToolCommand}"
+                                CommandParameter="KmzExport"
+                                ToolTip.Tip="Exportar Archivo KMZ (Google Earth)" />
                         <!-- Phone Device Profiles -->
                         <Button Classes="activity-btn"
                                 Classes.active="{Binding IsPhoneActive}"
@@ -250,6 +257,48 @@
                             </TreeView.ItemTemplate>
                         </TreeView>
                     </DockPanel>
+
+                    <!-- Sub-view: KMZ Export (KmzExport Active) -->
+                    <ScrollViewer IsVisible="{Binding IsKmzExportActive}" VerticalScrollBarVisibility="Auto">
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Exportación KMZ" Classes="section-header" Margin="6,0,0,3" />
+                            
+                            <Border Background="{DynamicResource BgTertiaryBrush}" CornerRadius="6" Padding="10" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1">
+                                <StackPanel Spacing="6">
+                                    <TextBlock Text="🌍 Configuración de Marcadores" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                    <TextBlock Text="Ajusta el diseño de los puntos que se mostrarán en Google Earth."
+                                               FontSize="9"
+                                               Foreground="{DynamicResource TextTertiaryBrush}"
+                                               TextWrapping="Wrap" Margin="0,0,0,4" />
+                                    
+                                    <!-- Color -->
+                                    <Grid ColumnDefinitions="Auto,*" Margin="0,4,0,0">
+                                        <TextBlock Grid.Column="0" Text="Color del Ícono:" VerticalAlignment="Center" FontSize="9.5" Margin="0,0,10,0" />
+                                        <ComboBox Grid.Column="1" ItemsSource="{Binding AvailableKmzColors}" SelectedItem="{Binding KmzMarkerColor}" HorizontalAlignment="Stretch" />
+                                    </Grid>
+
+                                    <!-- Date/Filename -->
+                                    <CheckBox Content="Incluir Nombre del Archivo en el título" IsChecked="{Binding KmzIncludeFilename}" FontSize="9.5" Margin="0,4,0,0" />
+                                    <CheckBox Content="Incluir Fecha en la descripción" IsChecked="{Binding KmzIncludeDate}" FontSize="9.5" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Background="{DynamicResource BgTertiaryBrush}" CornerRadius="6" Padding="10" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1">
+                                <StackPanel Spacing="6">
+                                    <TextBlock Text="🛤️ Trazado de Ruta" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                    <CheckBox Content="Dibujar línea conectando todos los puntos (Por orden cronológico)" 
+                                              IsChecked="{Binding KmzIncludePath}" FontSize="9.5" />
+                                </StackPanel>
+                            </Border>
+                            
+                            <Button Content="🗺️ Generar Archivo KMZ" 
+                                    Command="{Binding GenerateKmzCommand}" 
+                                    HorizontalAlignment="Stretch" 
+                                    HorizontalContentAlignment="Center"
+                                    Classes="accent"
+                                    Margin="0,10,0,0"/>
+                        </StackPanel>
+                    </ScrollViewer>
 
                     <!-- Sub-view 1.1: GPS Generator (GpsGen Active) -->
                     <ScrollViewer IsVisible="{Binding IsGpsGenActive}" VerticalScrollBarVisibility="Auto">
@@ -796,17 +845,14 @@
                             </Style>
                         </DataGrid.Styles>
                         <DataGrid.Columns>
-                            <DataGridTemplateColumn Header="{Binding}" Width="42" CanUserSort="False">
+                            <DataGridTemplateColumn Header=" " Width="36" CanUserSort="False" CanUserResize="False">
                                 <DataGridTemplateColumn.HeaderTemplate>
-                                    <DataTemplate x:DataType="vm:MainViewModel">
-                                        <CheckBox IsChecked="{Binding AreAllFilesSelected, Mode=TwoWay}"
-                                                  Command="{Binding ToggleSelectAllCommand}"
+                                    <DataTemplate>
+                                        <CheckBox IsChecked="{Binding $parent[Window].DataContext.AreAllFilesSelected, Mode=TwoWay}"
                                                   HorizontalAlignment="Center" 
                                                   VerticalAlignment="Center"
                                                   Margin="0"
                                                   Padding="0"
-                                                  MinHeight="0"
-                                                  MinWidth="0"
                                                   ToolTip.Tip="Seleccionar / Deseleccionar todos los archivos" />
                                     </DataTemplate>
                                 </DataGridTemplateColumn.HeaderTemplate>
@@ -817,9 +863,7 @@
                                                   HorizontalAlignment="Center" 
                                                   VerticalAlignment="Center"
                                                   Margin="0"
-                                                  Padding="0"
-                                                  MinHeight="0"
-                                                  MinWidth="0" />
+                                                  Padding="0" />
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>

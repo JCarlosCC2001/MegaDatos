@@ -12,12 +12,12 @@ public class TimeStampTemplate : IMetadataTemplate
 {
     public string Id => "TimeStamp";
     public string Name => "Timestamp Camera (Móvil)";
-    public string Description => "Simula fotografías capturadas con la aplicación móvil 'Timestamp Camera'. Incrusta la firma 'In Timestamp Camera', datos de cámara móvil, sincronización de marcas de tiempo y coordenadas GPS.";
+    public string Description => "Simula fotografías capturadas con la aplicación móvil 'Timestamp Camera'. Incrusta la firma 'In Timestamp Camera', sincronización de marcas de tiempo y coordenadas GPS.";
     public string IconGlyph => "⏱️";
     public string Category => "Cámara Móvil & Peritaje";
     public string PreservesSummary => "Parámetros ópticos de cámara (Make, Model, apertura, ISO, distancia focal) y coordenadas GPS.";
     public string RemovesSummary => "Perfiles pesados de edición de escritorio (XMP, IPTC de software externo).";
-    public string InjectsSummary => "Software: 'In Timestamp Camera', fechas sincronizadas (DateTimeOriginal, DateTimeDigitized, DateTime) y estructura EXIF móvil.";
+    public string InjectsSummary => "Software: 'In Timestamp Camera' y fechas sincronizadas (DateTimeOriginal, DateTimeDigitized, DateTime).";
 
     public TemplateComplianceResult ValidateCompliance(FileItem file)
     {
@@ -48,6 +48,8 @@ public class TimeStampTemplate : IMetadataTemplate
             var dtDigitized = exif.GetValue(ExifTag.DateTimeDigitized)?.Value?.ToString();
             var latVal = exif.GetValue(ExifTag.GPSLatitude)?.Value;
             var lonVal = exif.GetValue(ExifTag.GPSLongitude)?.Value;
+            var makeVal = exif.GetValue(ExifTag.Make)?.Value?.ToString();
+            var modelVal = exif.GetValue(ExifTag.Model)?.Value?.ToString();
 
             // 1. Check software signature
             bool hasSoftware = !string.IsNullOrEmpty(software) && 
@@ -94,6 +96,15 @@ public class TimeStampTemplate : IMetadataTemplate
                 result.Details.Add("No se detectaron coordenadas GPS en el perfil EXIF.");
                 return result;
             }
+            
+            if (string.IsNullOrEmpty(makeVal) || string.IsNullOrEmpty(modelVal))
+            {
+                result.State = ComplianceState.Incomplete;
+                result.SummaryMessage = "Faltan datos de hardware del celular (Marca/Modelo)";
+                result.Details.Add("Timestamp Camera es una app móvil y debe contener los datos del teléfono.");
+                result.Details.Add("Observación: Se recomienda aplicar antes un perfil de celular (Herramienta Teléfono).");
+                return result;
+            }
 
             result.State = ComplianceState.Compliant;
             result.SummaryMessage = "Cumple al 100% con el estándar de Timestamp Camera móvil";
@@ -124,18 +135,34 @@ public class TimeStampTemplate : IMetadataTemplate
             "-overwrite_original",
             "-xmp=",
             "-iptc=",
-            "-Software=In Timestamp Camera"
+            "-EXIF:Software=In Timestamp Camera",
+            "-exifbyteorder=MM",
+            
+            // Borrar datos de hardware de cámara para dejarlos vacíos
+            "-EXIF:Make=",
+            "-EXIF:Model=",
+            "-EXIF:LensMake=",
+            "-EXIF:LensModel=",
+            "-EXIF:FNumber=",
+            "-EXIF:FocalLength=",
+            "-EXIF:FocalLengthIn35mmFormat=",
+            "-EXIF:ISO=",
+            "-EXIF:ExposureTime=",
+            "-EXIF:ExposureProgram=",
+            "-EXIF:MeteringMode=",
+            "-EXIF:Flash=",
+            "-EXIF:WhiteBalance=",
+            "-EXIF:ColorSpace=",
+            "-EXIF:SensingMethod=",
+            "-EXIF:SceneCaptureType="
         };
 
         DateTime timestamp = ExtractDateFromFilenameOrFile(file);
         string dtStr = timestamp.ToString("yyyy:MM:dd HH:mm:ss");
 
-        args.Add($"-DateTimeOriginal={dtStr}");
-        args.Add($"-DateTimeDigitized={dtStr}");
-        args.Add($"-DateTime={dtStr}");
-
-        args.Add("-Make=Xiaomi");
-        args.Add("-Model=Mobile Camera");
+        args.Add($"-EXIF:DateTimeOriginal={dtStr}");
+        args.Add($"-EXIF:CreateDate={dtStr}"); // This is DateTimeDigitized in EXIF
+        args.Add($"-EXIF:ModifyDate={dtStr}"); // This is DateTime in EXIF
 
         args.Add(targetPath);
 

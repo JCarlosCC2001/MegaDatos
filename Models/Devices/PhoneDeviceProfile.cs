@@ -191,41 +191,70 @@ public class PhoneDeviceProfile
         // Siempre forzamos la reescritura total del contenedor EXIF con el ByteOrder especificado
         // para garantizar la coherencia forense del dispositivo.
         psi.ArgumentList.Add("-all=");
-        psi.ArgumentList.Add("-tagsfromfile");
-        psi.ArgumentList.Add("@");
-        psi.ArgumentList.Add("-all:all");
+
+        Action addPhoneTags = () =>
+        {
+            psi.ArgumentList.Add($"-EXIF:Make={ExifMake}");
+            psi.ArgumentList.Add($"-EXIF:Model={ExifModel}");
+            if (!string.IsNullOrEmpty(Software)) psi.ArgumentList.Add($"-EXIF:Software={Software}");
+            if (!string.IsNullOrEmpty(LensMake)) psi.ArgumentList.Add($"-EXIF:LensMake={LensMake}");
+            if (!string.IsNullOrEmpty(LensModel)) psi.ArgumentList.Add($"-EXIF:LensModel={LensModel}");
+
+            psi.ArgumentList.Add($"-EXIF:FNumber={FNumber}");
+            psi.ArgumentList.Add($"-EXIF:FocalLength={FocalLength}");
+            psi.ArgumentList.Add($"-EXIF:FocalLengthIn35mmFormat={FocalLength35mm}");
+            psi.ArgumentList.Add($"-EXIF:ISO={DefaultIso}");
+            psi.ArgumentList.Add($"-EXIF:ExposureTime={DefaultExposureTime}");
+            psi.ArgumentList.Add($"-EXIF:ExposureProgram=2");
+            psi.ArgumentList.Add($"-EXIF:MeteringMode=5");
+            psi.ArgumentList.Add($"-EXIF:Flash=16");
+            psi.ArgumentList.Add($"-EXIF:WhiteBalance=0");
+            psi.ArgumentList.Add($"-EXIF:ColorSpace=1");
+            psi.ArgumentList.Add($"-EXIF:SensingMethod=2");
+            psi.ArgumentList.Add($"-EXIF:SceneCaptureType=0");
+
+            DateTime ts = ExtractDate(file);
+            string dtStr = ts.ToString("yyyy:MM:dd HH:mm:ss");
+            psi.ArgumentList.Add($"-EXIF:DateTimeOriginal={dtStr}");
+            psi.ArgumentList.Add($"-EXIF:CreateDate={dtStr}");
+            psi.ArgumentList.Add($"-EXIF:ModifyDate={dtStr}");
+        };
+
+        if (overwriteAll)
+        {
+            // Modo "Reemplazar todo": Elimina todos los metadatos y aplica solo los del celular.
+            if (preserveGps)
+            {
+                // Si requiere preservar GPS en modo reemplazo total, copiamos SOLO la data GPS original.
+                psi.ArgumentList.Add("-tagsfromfile");
+                psi.ArgumentList.Add("@");
+                psi.ArgumentList.Add("-gps:all");
+            }
+            
+            // Agregamos los datos del teléfono incondicionalmente
+            addPhoneTags();
+        }
+        else
+        {
+            // Modo "Rellenar faltantes": Preserva todo el original (software, IPTC, XMP), solo rellena campos vacíos de hardware
+            
+            // 1. Agregamos los datos del teléfono (actúan como valores por defecto/fallback)
+            addPhoneTags();
+
+            // 2. Copiamos TODOS los metadatos originales encima (los originales sobreescribirán los fallbacks de arriba)
+            psi.ArgumentList.Add("-tagsfromfile");
+            psi.ArgumentList.Add("@");
+            psi.ArgumentList.Add("-all:all");
+
+            // 3. Si no desea preservar GPS, lo borramos explícitamente al final
+            if (!preserveGps)
+            {
+                psi.ArgumentList.Add("-gps:all=");
+            }
+        }
+
         psi.ArgumentList.Add("-unsafe");
         psi.ArgumentList.Add($"-ExifByteOrder={ExifByteOrder}");
-
-        psi.ArgumentList.Add($"-Make={ExifMake}");
-        psi.ArgumentList.Add($"-Model={ExifModel}");
-        if (!string.IsNullOrEmpty(Software)) psi.ArgumentList.Add($"-Software={Software}");
-        if (!string.IsNullOrEmpty(LensMake)) psi.ArgumentList.Add($"-LensMake={LensMake}");
-        if (!string.IsNullOrEmpty(LensModel)) psi.ArgumentList.Add($"-LensModel={LensModel}");
-
-        psi.ArgumentList.Add($"-FNumber={FNumber}");
-        psi.ArgumentList.Add($"-FocalLength={FocalLength}");
-        psi.ArgumentList.Add($"-FocalLengthIn35mmFormat={FocalLength35mm}");
-        psi.ArgumentList.Add($"-ISO={DefaultIso}");
-        psi.ArgumentList.Add($"-ExposureTime={DefaultExposureTime}");
-        psi.ArgumentList.Add($"-ExposureProgram=2");
-        psi.ArgumentList.Add($"-MeteringMode=5");
-        psi.ArgumentList.Add($"-Flash=16");
-        psi.ArgumentList.Add($"-WhiteBalance=0");
-        psi.ArgumentList.Add($"-ColorSpace=1");
-        psi.ArgumentList.Add($"-SensingMethod=2");
-        psi.ArgumentList.Add($"-SceneCaptureType=0");
-
-        DateTime ts = ExtractDate(file);
-        string dtStr = ts.ToString("yyyy:MM:dd HH:mm:ss");
-        psi.ArgumentList.Add($"-DateTimeOriginal={dtStr}");
-        psi.ArgumentList.Add($"-CreateDate={dtStr}");
-        psi.ArgumentList.Add($"-ModifyDate={dtStr}");
-
-        if (!preserveGps)
-        {
-            psi.ArgumentList.Add("-gps:all=");
-        }
 
         psi.ArgumentList.Add(imagePath);
 
