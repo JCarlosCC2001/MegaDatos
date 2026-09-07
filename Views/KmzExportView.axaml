@@ -1,0 +1,82 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MegaDatos.ViewModels"
+             x:Class="MegaDatos.Views.KmzExportView"
+             x:DataType="vm:MainViewModel">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="10">
+            <TextBlock Text="Exportación KMZ" Classes="section-header" Margin="6,0,0,3" />
+            
+            <Border Background="{DynamicResource BgTertiaryBrush}" CornerRadius="6" Padding="10" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="🌍 Configuración de Marcadores" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                    <TextBlock Text="Ajusta el diseño de los puntos que se mostrarán en Google Earth."
+                               FontSize="9"
+                               Foreground="{DynamicResource TextTertiaryBrush}"
+                               TextWrapping="Wrap" Margin="0,0,0,4" />
+                    
+                    <!-- Color -->
+                    <Grid ColumnDefinitions="Auto,*" Margin="0,4,0,0">
+                        <TextBlock Grid.Column="0" Text="Color del Ícono:" VerticalAlignment="Center" FontSize="9.5" Margin="0,0,10,0" />
+                        <ComboBox Grid.Column="1" ItemsSource="{Binding AvailableKmzColors}" SelectedItem="{Binding KmzMarkerColor}" HorizontalAlignment="Stretch" />
+                    </Grid>
+
+                    <!-- Date/Filename -->
+                    <CheckBox Content="Incluir Nombre del Archivo en el título" IsChecked="{Binding KmzIncludeFilename}" FontSize="9.5" Margin="0,4,0,0" />
+                    <CheckBox Content="Incluir Fecha en la descripción" IsChecked="{Binding KmzIncludeDate}" FontSize="9.5" />
+                </StackPanel>
+            </Border>
+
+            <Border Background="{DynamicResource BgTertiaryBrush}" CornerRadius="6" Padding="10" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="🛤️ Trazado de Ruta" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                    <CheckBox Content="Dibujar línea conectando todos los puntos (Por orden cronológico)" 
+                              IsChecked="{Binding KmzIncludePath}" FontSize="9.5" />
+                </StackPanel>
+            </Border>
+
+            <Border Background="{DynamicResource BgTertiaryBrush}" CornerRadius="6" Padding="10" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="🎯 Comparación y Referencia" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                    <CheckBox Content="Habilitar comparación con coordenada específica" IsChecked="{Binding KmzEnableComparison}" FontSize="9.5" />
+                    
+                    <StackPanel IsVisible="{Binding KmzEnableComparison}" Spacing="6" Margin="0,4,0,0">
+                        <TextBlock Text="Se usará la Referencia GPS del panel superior." FontSize="9" Foreground="{DynamicResource TextTertiaryBrush}" FontStyle="Italic" Margin="0,0,0,4" />
+                        
+                        <StackPanel Spacing="4" Margin="0,4,0,4">
+                            <CheckBox Content="Incluir punto en KMZ" IsChecked="{Binding KmzIncludeRefPoint}" FontSize="9.5" VerticalAlignment="Center"/>
+                            <DockPanel IsEnabled="{Binding KmzIncludeRefPoint}" Margin="20,0,0,0">
+                                <TextBlock Text="Forma del ícono:" VerticalAlignment="Center" FontSize="9.5" DockPanel.Dock="Left" Margin="0,0,10,0" />
+                                <ComboBox ItemsSource="{Binding AvailableKmzRefSymbols}" SelectedItem="{Binding KmzRefSymbol}" FontSize="9.5" Padding="4,2" HorizontalAlignment="Stretch" />
+                            </DockPanel>
+                        </StackPanel>
+                        
+                        <StackPanel Spacing="4" Margin="0,0,0,4">
+                            <CheckBox Content="Dibujar círculo de radio" IsChecked="{Binding KmzDrawCircle}" FontSize="9.5" VerticalAlignment="Center" />
+                            <DockPanel Margin="20,0,0,0">
+                                <TextBlock Text="metros" FontSize="9.5" VerticalAlignment="Center" DockPanel.Dock="Right" Margin="10,0,0,0" />
+                                <TextBox Text="{Binding KmzCircleRadius}" FontSize="9.5" Padding="4,2" IsEnabled="{Binding KmzDrawCircle}" HorizontalAlignment="Stretch" />
+                            </DockPanel>
+                        </StackPanel>
+
+                        <Border IsVisible="{Binding KmzStatsVisible}" Background="{DynamicResource BgSecondaryBrush}" CornerRadius="4" Padding="8" Margin="0,4,0,0" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Estadísticas de distancia a la referencia:" FontSize="9.5" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding KmzMinDist, StringFormat='Distancia Mínima: {0}'}" FontSize="9.5" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                <TextBlock Text="{Binding KmzMaxDist, StringFormat='Distancia Máxima: {0}'}" FontSize="9.5" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                <TextBlock Text="{Binding KmzAvgDist, StringFormat='Distancia Promedio: {0}'}" FontSize="9.5" Foreground="{DynamicResource TextSecondaryBrush}" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+            
+            <Button Content="🗺️ Generar Archivo KMZ" 
+                    Command="{Binding GenerateKmzCommand}" 
+                    HorizontalAlignment="Stretch" 
+                    HorizontalContentAlignment="Center"
+                    Classes="accent"
+                    Margin="0,10,0,0"/>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

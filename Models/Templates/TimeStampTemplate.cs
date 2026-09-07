@@ -166,46 +166,11 @@ public class TimeStampTemplate : IMetadataTemplate
 
         args.Add(targetPath);
 
-        string exiftoolPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "exiftool(-k).exe");
-        if (!File.Exists(exiftoolPath))
+        var result = await MegaDatos.Services.ExifToolService.ExecuteAsync(args, maxRetries: 5);
+        if (!result.Success)
         {
-            exiftoolPath = Path.Combine(Directory.GetCurrentDirectory(), "Assets", "exiftool(-k).exe");
+            throw new Exception("ExifTool falló al procesar el archivo después de múltiples intentos.");
         }
-
-        var psi = new System.Diagnostics.ProcessStartInfo
-        {
-            FileName = exiftoolPath,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true
-        };
-
-        foreach (var arg in args)
-        {
-            psi.ArgumentList.Add(arg);
-        }
-
-        int maxRetries = 5;
-        for (int i = 0; i < maxRetries; i++)
-        {
-            using var process = System.Diagnostics.Process.Start(psi);
-            if (process != null)
-            {
-                var errTask = process.StandardError.ReadToEndAsync();
-                var outTask = process.StandardOutput.ReadToEndAsync();
-                
-                await Task.WhenAll(errTask, outTask, process.WaitForExitAsync());
-                
-                if (process.ExitCode == 0)
-                {
-                    return; // Éxito
-                }
-            }
-            await Task.Delay(500); // Esperar medio segundo antes de reintentar (útil para errores de ASLR intermitentes)
-        }
-        
-        throw new Exception("ExifTool falló al procesar el archivo después de múltiples intentos.");
     }
 
 

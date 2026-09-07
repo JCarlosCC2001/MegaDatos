@@ -1,0 +1,134 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MegaDatos.ViewModels"
+             x:Class="MegaDatos.Views.GpsGeneratorView"
+             x:DataType="vm:MainViewModel">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="10">
+            <TextBlock Text="Generador de Coordenadas" Classes="section-header" Margin="6,0,0,3" />
+            
+            <Border Background="{DynamicResource BgTertiaryBrush}" CornerRadius="6" Padding="10" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="📍 Dispersión en Radio Circular" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                    <TextBlock Text="Genera e incrusta coordenadas GPS aleatorias uniformemente distribuidas dentro de un radio alrededor de un punto medio."
+                               FontSize="9"
+                               Foreground="{DynamicResource TextTertiaryBrush}"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+            <!-- Center point coordinates -->
+            <Border Background="{DynamicResource BgTertiaryBrush}" CornerRadius="6" Padding="8" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1">
+                <StackPanel Spacing="6">
+                    <DockPanel>
+                        <TextBlock Text="Punto Medio (Centro)" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                        <Button Classes="toolbar-btn" 
+                                Command="{Binding GpsGenUseCurrentFileGpsCommand}" 
+                                Content="📍 Copiar de Foto" 
+                                FontSize="8.5" 
+                                Padding="6,2" 
+                                HorizontalAlignment="Right" 
+                                ToolTip.Tip="Usar las coordenadas GPS de la foto seleccionada actualmente" />
+                    </DockPanel>
+
+                    <Grid ColumnDefinitions="*,6,*" Margin="0,2">
+                        <StackPanel Grid.Column="0" Spacing="2">
+                            <TextBlock Text="Latitud Central" FontSize="8.5" Foreground="{DynamicResource TextSecondaryBrush}" />
+                            <TextBox Text="{Binding GpsGenCenterLat}" Classes="meta-input" Padding="4,2" MinHeight="22" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Spacing="2">
+                            <TextBlock Text="Longitud Central" FontSize="8.5" Foreground="{DynamicResource TextSecondaryBrush}" />
+                            <TextBox Text="{Binding GpsGenCenterLon}" Classes="meta-input" Padding="4,2" MinHeight="22" />
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Radius variation -->
+            <Border Background="{DynamicResource BgTertiaryBrush}" CornerRadius="6" Padding="8" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="Rango de Variación (Radio)" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                    
+                    <Grid ColumnDefinitions="*,6,Auto">
+                        <TextBox Grid.Column="0" Text="{Binding GpsGenRadius}" Classes="meta-input" Padding="4,2" MinHeight="22" />
+                        <ComboBox Grid.Column="2" ItemsSource="{Binding GpsGenRadiusUnits}" SelectedItem="{Binding GpsGenRadiusUnit}" Classes="meta-input" Padding="4,2" MinHeight="22" MinWidth="110" />
+                    </Grid>
+
+                    <!-- Quick radius chips -->
+                    <StackPanel Spacing="3">
+                        <TextBlock Text="Accesos rápidos:" FontSize="8.5" Foreground="{DynamicResource TextTertiaryBrush}" />
+                        <Grid ColumnDefinitions="*,4,*,4,*,4,*">
+                            <Button Grid.Column="0" Classes="toolbar-btn" Command="{Binding GpsGenSetRadiusCommand}" CommandParameter="100" Content="100m" FontSize="8" Padding="2,2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+                            <Button Grid.Column="2" Classes="toolbar-btn" Command="{Binding GpsGenSetRadiusCommand}" CommandParameter="500" Content="500m" FontSize="8" Padding="2,2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+                            <Button Grid.Column="4" Classes="toolbar-btn" Command="{Binding GpsGenSetRadiusKmCommand}" CommandParameter="1" Content="1 km" FontSize="8" Padding="2,2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+                            <Button Grid.Column="6" Classes="toolbar-btn" Command="{Binding GpsGenSetRadiusKmCommand}" CommandParameter="5" Content="5 km" FontSize="8" Padding="2,2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+                        </Grid>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Altitude & Mode options -->
+            <Border Background="{DynamicResource BgTertiaryBrush}" CornerRadius="6" Padding="8" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="Opciones de Asignación" FontSize="9.5" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}" />
+                    
+                    <RadioButton Content="Dispersión aleatoria por cada foto" 
+                                 IsChecked="{Binding GpsGenUniquePerPhoto}" 
+                                 GroupName="GpsGenMode" 
+                                 FontSize="9" />
+                    <RadioButton Content="Misma coordenada para todo el lote" 
+                                 IsChecked="{Binding !GpsGenUniquePerPhoto}" 
+                                 GroupName="GpsGenMode" 
+                                 FontSize="9" />
+
+                    <Border Height="1" Background="{DynamicResource BorderSubtleBrush}" Margin="0,2" />
+
+                    <DockPanel>
+                        <TextBlock Text="Altitud base (m s.n.m.):" FontSize="8.5" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                        <TextBox Text="{Binding GpsGenBaseAltitude}" Classes="meta-input" Padding="4,2" MinHeight="20" Width="70" HorizontalAlignment="Right" />
+                    </DockPanel>
+
+                    <CheckBox Content="Crear copia .bak al reemplazar" IsChecked="{Binding BatchBackupEnabled}" FontSize="9" Margin="0,2,0,0" />
+                </StackPanel>
+            </Border>
+
+            <!-- Live test preview card -->
+            <Border Background="{DynamicResource BgTertiaryBrush}" CornerRadius="6" Padding="8" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1">
+                <StackPanel Spacing="6">
+                    <DockPanel>
+                        <TextBlock Text="🎲 Prueba en Vivo" FontSize="9.5" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                        <Button Classes="toolbar-btn" 
+                                Command="{Binding GpsGenGeneratePreviewCommand}" 
+                                Content="Simular" 
+                                FontSize="8.5" 
+                                Padding="6,2" 
+                                HorizontalAlignment="Right" />
+                    </DockPanel>
+
+                    <StackPanel Spacing="3" IsVisible="{Binding HasGpsGenPreview}">
+                        <DockPanel>
+                            <TextBlock Text="Decimal:" FontSize="8.5" Foreground="{DynamicResource TextTertiaryBrush}" />
+                            <TextBlock Text="{Binding GpsGenPreviewLat, StringFormat='{}{0}, '}" FontSize="8.5" FontWeight="Bold" Foreground="{DynamicResource TextAccentBrush}" Margin="4,0,0,0" />
+                            <TextBlock Text="{Binding GpsGenPreviewLon}" FontSize="8.5" FontWeight="Bold" Foreground="{DynamicResource TextAccentBrush}" />
+                        </DockPanel>
+                        <TextBlock Text="{Binding GpsGenPreviewDms}" FontSize="8" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" />
+                    </StackPanel>
+
+                    <TextBlock Text="Presiona 'Simular' para generar un punto de prueba dentro del radio." 
+                               FontSize="8" 
+                               Foreground="{DynamicResource TextTertiaryBrush}" 
+                               IsVisible="{Binding !HasGpsGenPreview}" 
+                               TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+            <Button Classes="action-btn" 
+                    Command="{Binding ExecuteBatchCommand}" 
+                    Content="📍 Asignar Coordenadas GPS" 
+                    HorizontalAlignment="Stretch" 
+                    HorizontalContentAlignment="Center" 
+                    Margin="0,2,0,0" 
+                    Padding="0,6" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

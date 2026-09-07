@@ -1,0 +1,82 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MegaDatos.ViewModels"
+             xmlns:templates="using:MegaDatos.Models.Templates"
+             x:Class="MegaDatos.Views.MetadataTemplatesView"
+             x:DataType="vm:MainViewModel">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="12">
+            <TextBlock Text="Plantillas de Metadatos" Classes="section-header" Margin="6,0,0,5" />
+            
+            <Border Background="{DynamicResource BgTertiaryBrush}" CornerRadius="6" Padding="10" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="🏷️ Estandarización de Perfiles" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                    <TextBlock Text="Adecúa metadatos como si hubieran sido generados por una aplicación o programa específico."
+                               FontSize="9"
+                               Foreground="{DynamicResource TextTertiaryBrush}"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+            <StackPanel Spacing="4">
+                <TextBlock Text="Seleccionar Plantilla" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" />
+                <ComboBox ItemsSource="{Binding AvailableTemplates}" 
+                          SelectedItem="{Binding SelectedTemplate}" 
+                          Classes="meta-input" 
+                          Padding="4,2" 
+                          MinHeight="26" 
+                          HorizontalAlignment="Stretch">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="templates:IMetadataTemplate">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <TextBlock Text="{Binding IconGlyph}" FontSize="11" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding Name}" FontSize="10" FontWeight="SemiBold" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </StackPanel>
+
+            <!-- Template details card -->
+            <Border Background="{DynamicResource BgTertiaryBrush}" CornerRadius="6" Padding="10" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1">
+                <StackPanel Spacing="6">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="{Binding SelectedTemplate.IconGlyph}" FontSize="12" />
+                        <TextBlock Text="{Binding SelectedTemplate.Name}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                    </StackPanel>
+                    <TextBlock Text="{Binding SelectedTemplate.Description}" FontSize="9" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" />
+                    
+                    <Border Height="1" Background="{DynamicResource BorderSubtleBrush}" Margin="0,2" IsVisible="{Binding IsTemplateActiveSelected}" />
+
+                    <StackPanel Spacing="3" IsVisible="{Binding IsTemplateActiveSelected}">
+                        <TextBlock Text="✓ Conserva:" FontSize="9" FontWeight="SemiBold" Foreground="#10b981" />
+                        <TextBlock Text="{Binding SelectedTemplate.PreservesSummary}" FontSize="9" Foreground="{DynamicResource TextTertiaryBrush}" TextWrapping="Wrap" Margin="4,0,0,0" />
+                    </StackPanel>
+
+                    <StackPanel Spacing="3" IsVisible="{Binding IsTemplateActiveSelected}">
+                        <TextBlock Text="✗ Elimina:" FontSize="9" FontWeight="SemiBold" Foreground="#ef4444" />
+                        <TextBlock Text="{Binding SelectedTemplate.RemovesSummary}" FontSize="9" Foreground="{DynamicResource TextTertiaryBrush}" TextWrapping="Wrap" Margin="4,0,0,0" />
+                    </StackPanel>
+
+                    <StackPanel Spacing="3" IsVisible="{Binding IsTemplateActiveSelected}">
+                        <TextBlock Text="+ Incrusta:" FontSize="9" FontWeight="SemiBold" Foreground="{DynamicResource TextAccentBrush}" />
+                        <TextBlock Text="{Binding SelectedTemplate.InjectsSummary}" FontSize="9" Foreground="{DynamicResource TextTertiaryBrush}" TextWrapping="Wrap" Margin="4,0,0,0" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <StackPanel Spacing="6" Margin="2,0" IsVisible="{Binding IsTemplateActiveSelected}">
+                <CheckBox Content="Crear copia .bak al reemplazar" IsChecked="{Binding BatchBackupEnabled}" FontSize="10" Margin="0,4,0,0" />
+            </StackPanel>
+
+            <Button Classes="action-btn" 
+                    Command="{Binding ExecuteBatchCommand}" 
+                    IsEnabled="{Binding IsTemplateApplyEnabled}"
+                    Content="📋 Aplicar Plantilla" 
+                    HorizontalAlignment="Stretch" 
+                    HorizontalContentAlignment="Center" 
+                    Margin="0,10,0,0" 
+                    Padding="0,6" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

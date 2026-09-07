@@ -1,0 +1,103 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MegaDatos.ViewModels"
+             xmlns:devices="using:MegaDatos.Models.Devices"
+             x:Class="MegaDatos.Views.PhoneProfileView"
+             x:DataType="vm:MainViewModel">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="12">
+            <TextBlock Text="Datos de Teléfono Móvil" Classes="section-header" Margin="6,0,0,5" />
+            
+            <Border Background="{DynamicResource BgTertiaryBrush}" CornerRadius="6" Padding="10" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="📱 Emulador de Cámara Móvil" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                    <TextBlock Text="Incrusta metadatos de hardware, lente, apertura, ISO y sistema operativo propios de smartphones reales."
+                               FontSize="9"
+                               Foreground="{DynamicResource TextTertiaryBrush}"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+            <!-- Phone selector -->
+            <StackPanel Spacing="4">
+                <TextBlock Text="Seleccionar Modelo de Celular" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" />
+                <ComboBox ItemsSource="{Binding AvailablePhoneDevices}" 
+                          SelectedItem="{Binding SelectedPhoneDevice}" 
+                          Classes="meta-input" 
+                          Padding="4,2" 
+                          MinHeight="26" 
+                          HorizontalAlignment="Stretch">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="devices:PhoneDeviceProfile">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <TextBlock Text="{Binding IconGlyph}" FontSize="11" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding Brand}" FontSize="10" FontWeight="Bold" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding ModelName}" FontSize="10" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </StackPanel>
+
+            <!-- Phone Specs Card -->
+            <Border Background="{DynamicResource BgTertiaryBrush}" CornerRadius="6" Padding="10" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1">
+                <StackPanel Spacing="6">
+                    <DockPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="{Binding SelectedPhoneDevice.IconGlyph}" FontSize="12" />
+                            <TextBlock Text="{Binding SelectedPhoneDevice.ModelName}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding SelectedPhoneDevice.Brand}" FontSize="9" FontWeight="SemiBold" Foreground="{DynamicResource TextAccentBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                    </DockPanel>
+
+                    <TextBlock Text="{Binding SelectedPhoneDevice.Description}" FontSize="9" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" />
+                    
+                    <Border Height="1" Background="{DynamicResource BorderSubtleBrush}" Margin="0,2" />
+
+                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto" Margin="0,2">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Fabricante:" FontSize="9" Foreground="{DynamicResource TextTertiaryBrush}" Margin="0,1,6,1" />
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedPhoneDevice.ExifMake}" FontSize="9" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Modelo EXIF:" FontSize="9" Foreground="{DynamicResource TextTertiaryBrush}" Margin="0,1,6,1" />
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedPhoneDevice.ExifModel}" FontSize="9" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Software / SO:" FontSize="9" Foreground="{DynamicResource TextTertiaryBrush}" Margin="0,1,6,1" />
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedPhoneDevice.Software}" FontSize="9" Foreground="{DynamicResource TextSecondaryBrush}" />
+
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Óptica Sensor:" FontSize="9" Foreground="{DynamicResource TextTertiaryBrush}" Margin="0,1,6,1" />
+                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedPhoneDevice.OpticalSummary}" FontSize="9" Foreground="{DynamicResource TextAccentBrush}" FontWeight="SemiBold" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Options -->
+            <Border Background="{DynamicResource BgTertiaryBrush}" CornerRadius="6" Padding="8" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="Modo de Inyección" FontSize="9.5" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}" />
+                    
+                    <RadioButton Content="Solo rellenar datos faltantes" 
+                                 IsChecked="{Binding !PhoneOverwriteAll}" 
+                                 GroupName="PhoneMode" 
+                                 FontSize="9.5" />
+                    <RadioButton Content="Reemplazar todos los datos de cámara" 
+                                 IsChecked="{Binding PhoneOverwriteAll}" 
+                                 GroupName="PhoneMode" 
+                                 FontSize="9.5" />
+
+                    <Border Height="1" Background="{DynamicResource BorderSubtleBrush}" Margin="0,2" />
+
+                    <CheckBox Content="Conservar coordenadas GPS actuales" IsChecked="{Binding PhonePreserveGps}" FontSize="9.5" />
+                    <CheckBox Content="Crear copia .bak al reemplazar" IsChecked="{Binding BatchBackupEnabled}" FontSize="9.5" />
+                </StackPanel>
+            </Border>
+
+            <Button Classes="action-btn" 
+                    Command="{Binding ExecuteBatchCommand}" 
+                    Content="📱 Aplicar Datos de Teléfono" 
+                    HorizontalAlignment="Stretch" 
+                    HorizontalContentAlignment="Center" 
+                    Margin="0,4,0,0" 
+                    Padding="0,6" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

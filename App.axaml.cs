@@ -23,47 +23,71 @@ public partial class App : Application
         
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            var savedState = AppStateService.Instance.LoadState();
-            var vm = new MainViewModel();
+            var splashWindow = new SplashWindow();
+            desktop.MainWindow = splashWindow;
 
-            var mainWindow = new MainWindow
+            // Iniciar inicialización pesada en segundo plano
+            _ = Task.Run(async () =>
             {
-                DataContext = vm,
-            };
+                // Simulamos un pequeño tiempo extra si la carga es muy rápida para que el usuario pueda ver el logo
+                var minimumSplashTime = Task.Delay(1500);
 
-            mainWindow.ApplySavedWindowState(savedState);
+                await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => splashWindow.UpdateStatus("Cargando estado guardado..."));
+                var savedState = AppStateService.Instance.LoadState();
+                
+                await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => splashWindow.UpdateStatus("Inicializando base de datos local..."));
+                var vm = new MainViewModel();
 
-            vm.RequestOpenFolderAsync = async () =>
-            {
-                var result = await mainWindow.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+                await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => splashWindow.UpdateStatus("Restaurando sesión anterior..."));
+                vm.LoadSavedState(savedState);
+
+                // Esperar al tiempo mínimo de splash
+                await minimumSplashTime;
+
+                await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    Title = "Seleccionar Carpeta",
-                    AllowMultiple = false
-                });
-                return result.Count > 0 ? result[0].TryGetLocalPath() : null;
-            };
-
-            vm.RequestSaveKmzAsync = async () =>
-            {
-                var result = await mainWindow.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
-                {
-                    Title = "Guardar archivo KMZ",
-                    DefaultExtension = "kmz",
-                    SuggestedFileName = "Coordenadas.kmz",
-                    FileTypeChoices = new[]
+                    var mainWindow = new MainWindow
                     {
-                        new FilePickerFileType("Archivos KMZ (*.kmz)") { Patterns = new[] { "*.kmz" } }
-                    }
+                        DataContext = vm,
+                    };
+
+                    mainWindow.ApplySavedWindowState(savedState);
+
+                    vm.RequestOpenFolderAsync = async () =>
+                    {
+                        var result = await mainWindow.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+                        {
+                            Title = "Seleccionar Carpeta",
+                            AllowMultiple = false
+                        });
+                        return result.Count > 0 ? result[0].TryGetLocalPath() : null;
+                    };
+
+                    vm.RequestSaveKmzAsync = async () =>
+                    {
+                        var result = await mainWindow.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+                        {
+                            Title = "Guardar archivo KMZ",
+                            DefaultExtension = "kmz",
+                            SuggestedFileName = "Coordenadas.kmz",
+                            FileTypeChoices = new[]
+                            {
+                                new FilePickerFileType("Archivos KMZ (*.kmz)") { Patterns = new[] { "*.kmz" } }
+                            }
+                        });
+                        return result?.TryGetLocalPath();
+                    };
+
+                    // Reemplazar la ventana principal del ciclo de vida
+                    desktop.MainWindow = mainWindow;
+                    mainWindow.Show();
+                    
+                    // Cerrar el splash
+                    splashWindow.Close();
                 });
-                return result?.TryGetLocalPath();
-            };
+            });
 
-            desktop.MainWindow = mainWindow;
-            
-            // Cargar estado previo en el ViewModel
-            vm.LoadSavedState(savedState);
-
-            Console.WriteLine("App: MainWindow instantiated and state loaded");
+            Console.WriteLine("App: SplashWindow instantiated and loading background tasks");
         }
         else
         {

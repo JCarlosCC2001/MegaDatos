@@ -160,64 +160,42 @@ public class PhoneDeviceProfile
             exiftoolPath = Path.Combine(Directory.GetCurrentDirectory(), "Assets", "exiftool.exe");
         }
 
-        // Soporte si el usuario olvidó renombrar el ejecutable descargado
-        if (!File.Exists(exiftoolPath))
-        {
-            exiftoolPath = Path.Combine(Directory.GetCurrentDirectory(), "Assets", "exiftool(-k).exe");
-        }
-        if (!File.Exists(exiftoolPath))
-        {
-            exiftoolPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "exiftool(-k).exe");
-        }
+        var args = new System.Collections.Generic.List<string>();
 
-        if (!File.Exists(exiftoolPath))
-        {
-            throw new FileNotFoundException("No se encontró exiftool.exe en la carpeta Assets.", exiftoolPath);
-        }
-
-        var psi = new System.Diagnostics.ProcessStartInfo
-        {
-            FileName = exiftoolPath,
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            RedirectStandardError = true,
-            RedirectStandardOutput = true
-        };
-
-        psi.ArgumentList.Add("-overwrite_original");
-        psi.ArgumentList.Add("-m");
-        psi.ArgumentList.Add("-P");
+        args.Add("-overwrite_original");
+        args.Add("-m");
+        args.Add("-P");
         
         // Siempre forzamos la reescritura total del contenedor EXIF con el ByteOrder especificado
         // para garantizar la coherencia forense del dispositivo.
-        psi.ArgumentList.Add("-all=");
+        args.Add("-all=");
 
         Action addPhoneTags = () =>
         {
-            psi.ArgumentList.Add($"-EXIF:Make={ExifMake}");
-            psi.ArgumentList.Add($"-EXIF:Model={ExifModel}");
-            if (!string.IsNullOrEmpty(Software)) psi.ArgumentList.Add($"-EXIF:Software={Software}");
-            if (!string.IsNullOrEmpty(LensMake)) psi.ArgumentList.Add($"-EXIF:LensMake={LensMake}");
-            if (!string.IsNullOrEmpty(LensModel)) psi.ArgumentList.Add($"-EXIF:LensModel={LensModel}");
+            args.Add($"-EXIF:Make={ExifMake}");
+            args.Add($"-EXIF:Model={ExifModel}");
+            if (!string.IsNullOrEmpty(Software)) args.Add($"-EXIF:Software={Software}");
+            if (!string.IsNullOrEmpty(LensMake)) args.Add($"-EXIF:LensMake={LensMake}");
+            if (!string.IsNullOrEmpty(LensModel)) args.Add($"-EXIF:LensModel={LensModel}");
 
-            psi.ArgumentList.Add($"-EXIF:FNumber={FNumber}");
-            psi.ArgumentList.Add($"-EXIF:FocalLength={FocalLength}");
-            psi.ArgumentList.Add($"-EXIF:FocalLengthIn35mmFormat={FocalLength35mm}");
-            psi.ArgumentList.Add($"-EXIF:ISO={DefaultIso}");
-            psi.ArgumentList.Add($"-EXIF:ExposureTime={DefaultExposureTime}");
-            psi.ArgumentList.Add($"-EXIF:ExposureProgram=2");
-            psi.ArgumentList.Add($"-EXIF:MeteringMode=5");
-            psi.ArgumentList.Add($"-EXIF:Flash=16");
-            psi.ArgumentList.Add($"-EXIF:WhiteBalance=0");
-            psi.ArgumentList.Add($"-EXIF:ColorSpace=1");
-            psi.ArgumentList.Add($"-EXIF:SensingMethod=2");
-            psi.ArgumentList.Add($"-EXIF:SceneCaptureType=0");
+            args.Add($"-EXIF:FNumber={FNumber}");
+            args.Add($"-EXIF:FocalLength={FocalLength}");
+            args.Add($"-EXIF:FocalLengthIn35mmFormat={FocalLength35mm}");
+            args.Add($"-EXIF:ISO={DefaultIso}");
+            args.Add($"-EXIF:ExposureTime={DefaultExposureTime}");
+            args.Add($"-EXIF:ExposureProgram=2");
+            args.Add($"-EXIF:MeteringMode=5");
+            args.Add($"-EXIF:Flash=16");
+            args.Add($"-EXIF:WhiteBalance=0");
+            args.Add($"-EXIF:ColorSpace=1");
+            args.Add($"-EXIF:SensingMethod=2");
+            args.Add($"-EXIF:SceneCaptureType=0");
 
             DateTime ts = ExtractDate(file);
             string dtStr = ts.ToString("yyyy:MM:dd HH:mm:ss");
-            psi.ArgumentList.Add($"-EXIF:DateTimeOriginal={dtStr}");
-            psi.ArgumentList.Add($"-EXIF:CreateDate={dtStr}");
-            psi.ArgumentList.Add($"-EXIF:ModifyDate={dtStr}");
+            args.Add($"-EXIF:DateTimeOriginal={dtStr}");
+            args.Add($"-EXIF:CreateDate={dtStr}");
+            args.Add($"-EXIF:ModifyDate={dtStr}");
         };
 
         if (overwriteAll)
@@ -226,9 +204,9 @@ public class PhoneDeviceProfile
             if (preserveGps)
             {
                 // Si requiere preservar GPS en modo reemplazo total, copiamos SOLO la data GPS original.
-                psi.ArgumentList.Add("-tagsfromfile");
-                psi.ArgumentList.Add("@");
-                psi.ArgumentList.Add("-gps:all");
+                args.Add("-tagsfromfile");
+                args.Add("@");
+                args.Add("-gps:all");
             }
             
             // Agregamos los datos del teléfono incondicionalmente
@@ -242,40 +220,30 @@ public class PhoneDeviceProfile
             addPhoneTags();
 
             // 2. Copiamos TODOS los metadatos originales encima (los originales sobreescribirán los fallbacks de arriba)
-            psi.ArgumentList.Add("-tagsfromfile");
-            psi.ArgumentList.Add("@");
-            psi.ArgumentList.Add("-all:all");
+            args.Add("-tagsfromfile");
+            args.Add("@");
+            args.Add("-all:all");
 
             // 3. Si no desea preservar GPS, lo borramos explícitamente al final
             if (!preserveGps)
             {
-                psi.ArgumentList.Add("-gps:all=");
+                args.Add("-gps:all=");
             }
         }
 
-        psi.ArgumentList.Add("-unsafe");
-        psi.ArgumentList.Add($"-ExifByteOrder={ExifByteOrder}");
+        args.Add("-unsafe");
+        args.Add($"-ExifByteOrder={ExifByteOrder}");
 
-        psi.ArgumentList.Add(imagePath);
+        args.Add(imagePath);
 
-        using var process = System.Diagnostics.Process.Start(psi);
-        if (process != null)
+        var result = await MegaDatos.Services.ExifToolService.ExecuteAsync(args, maxRetries: 1);
+
+        if (!result.Success)
         {
-            var errTask = process.StandardError.ReadToEndAsync();
-            var outTask = process.StandardOutput.ReadToEndAsync();
-
-            await System.Threading.Tasks.Task.WhenAll(errTask, outTask, process.WaitForExitAsync());
-
-            string errors = errTask.Result;
-            string output = outTask.Result;
-
-            if (process.ExitCode != 0)
-            {
-                string msg = string.IsNullOrWhiteSpace(errors) ? 
-                    (string.IsNullOrWhiteSpace(output) ? "Cierre silencioso con código " + process.ExitCode : output) 
-                    : errors;
-                throw new Exception($"ExifTool error ({process.ExitCode}): {msg}");
-            }
+            string msg = string.IsNullOrWhiteSpace(result.Error) ? 
+                (string.IsNullOrWhiteSpace(result.Output) ? "Cierre silencioso con error" : result.Output) 
+                : result.Error;
+            throw new Exception($"ExifTool error: {msg}");
         }
     }
 

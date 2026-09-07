@@ -1,0 +1,36 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MegaDatos.ViewModels"
+             x:Class="MegaDatos.Views.CleanMetadataView"
+             x:DataType="vm:MainViewModel">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="12">
+            <TextBlock Text="Limpieza de Metadatos" Classes="section-header" Margin="6,0,0,5" />
+            
+            <Border Background="{DynamicResource BgTertiaryBrush}" CornerRadius="6" Padding="10" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="🛡️ Protección y Privacidad" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                    <TextBlock Text="Elimina rastros personales, marcas de cámara, coordenadas GPS y registros incrustados en los archivos."
+                               FontSize="9"
+                               Foreground="{DynamicResource TextTertiaryBrush}"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+            <StackPanel Spacing="6" Margin="2,0">
+                <CheckBox Content="Limpiar todos los metadatos" IsChecked="{Binding CleanAllMetadata}" FontSize="10" FontWeight="SemiBold" />
+                
+                <StackPanel Spacing="4" Margin="14,0,0,0" IsVisible="{Binding !CleanAllMetadata}">
+                    <CheckBox Content="📍 Geolocalización (GPS)" IsChecked="{Binding CleanGps}" FontSize="10" />
+                    <CheckBox Content="📷 Datos de Cámara / EXIF" IsChecked="{Binding CleanExif}" FontSize="10" />
+                    <CheckBox Content="👤 Autoría, Copyright y XMP" IsChecked="{Binding CleanAuthorship}" FontSize="10" />
+                    <CheckBox Content="📝 IPTC, Títulos y Etiquetas" IsChecked="{Binding CleanIptc}" FontSize="10" />
+                </StackPanel>
+
+                <CheckBox Content="Crear copia .bak al reemplazar" IsChecked="{Binding BatchBackupEnabled}" FontSize="10" Margin="0,4,0,0" />
+            </StackPanel>
+
+            <Button Classes="action-btn" Command="{Binding ExecuteBatchCommand}" Content="🧹 Limpiar Metadatos" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,10,0,0" Padding="0,6" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

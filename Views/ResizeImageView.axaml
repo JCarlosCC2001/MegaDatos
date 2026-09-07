@@ -1,0 +1,25 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MegaDatos.ViewModels"
+             x:Class="MegaDatos.Views.ResizeImageView"
+             x:DataType="vm:MainViewModel">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="12">
+            <TextBlock Text="Redimensionar Imágenes" Classes="section-header" Margin="6,0,0,5" />
+            
+            <StackPanel Spacing="4">
+                <TextBlock Text="Ancho (px)" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" />
+                <TextBox Text="{Binding TargetWidth}" Classes="meta-input" Padding="4,2" MinHeight="22" HorizontalAlignment="Stretch" />
+            </StackPanel>
+
+            <StackPanel Spacing="4">
+                <TextBlock Text="Alto (px)" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" />
+                <TextBox Text="{Binding TargetHeight}" Classes="meta-input" Padding="4,2" MinHeight="22" HorizontalAlignment="Stretch" />
+            </StackPanel>
+
+            <CheckBox Content="Mantener relación de aspecto" IsChecked="{Binding KeepAspectRatio}" FontSize="10" Margin="0,4" />
+
+            <Button Classes="action-btn" Command="{Binding ExecuteBatchCommand}" Content="Redimensionar Seleccionados" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,10,0,0" Padding="0,6" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

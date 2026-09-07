@@ -86,4 +86,26 @@ public partial class FolderNode : ObservableObject
             }
         }
     }
+
+    public void RefreshChildren()
+    {
+        if (IsExpanded)
+        {
+            Children.Clear();
+            Children.Add(new FolderNode("⏳ Cargando...", "", true));
+            LoadChildren();
+        }
+        else
+        {
+            Children.Clear();
+            try 
+            {
+                if (Directory.Exists(FullPath) && Directory.EnumerateDirectories(FullPath).Any())
+                {
+                    Children.Add(new FolderNode("⏳ Cargando...", "", true));
+                }
+            }
+            catch { }
+        }
+    }
 }

@@ -1,0 +1,27 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MegaDatos.ViewModels"
+             xmlns:models="using:MegaDatos.Models"
+             x:Class="MegaDatos.Views.ExplorerView"
+             x:DataType="vm:MainViewModel">
+    <DockPanel>
+        <TextBlock DockPanel.Dock="Top" Text="Directorios" Classes="section-header" Margin="6,0,0,10" />
+        <Button DockPanel.Dock="Top" IsVisible="{Binding !HasDirectoryLoaded}" Command="{Binding OpenFolderCommand}" Classes="action-btn" Content="📂 Seleccionar Directorio" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,0,0,10" Padding="0,6" />
+        <TreeView ItemsSource="{Binding FolderTree}"
+                  SelectedItem="{Binding SelectedFolderNode, Mode=TwoWay}"
+                  Background="Transparent">
+            <TreeView.Styles>
+                <Style Selector="TreeViewItem" x:DataType="models:FolderNode">
+                    <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                    <Setter Property="MinHeight" Value="22" />
+                    <Setter Property="Margin" Value="0" />
+                </Style>
+            </TreeView.Styles>
+            <TreeView.ItemTemplate>
+                <TreeDataTemplate ItemsSource="{Binding Children}" DataType="models:FolderNode">
+                    <TextBlock Text="{Binding Name}" FontSize="10" Padding="0,2" VerticalAlignment="Center" />
+                </TreeDataTemplate>
+            </TreeView.ItemTemplate>
+        </TreeView>
+    </DockPanel>
+</UserControl>
