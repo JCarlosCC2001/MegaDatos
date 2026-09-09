@@ -223,6 +223,13 @@
                                 Command="{Binding NavigateToolCommand}"
                                 CommandParameter="Resize"
                                 ToolTip.Tip="Cambiar Tamaños" />
+                        <!-- Duplicate Finder -->
+                        <Button Classes="activity-btn"
+                                Classes.active="{Binding IsDuplicateFinderActive}"
+                                Content="👯"
+                                Command="{Binding NavigateToolCommand}"
+                                CommandParameter="DuplicateFinder"
+                                ToolTip.Tip="Buscar Duplicados" />
                     </StackPanel>
 
                     <!-- Bottom Navigation Tools (Settings) -->
@@ -268,6 +275,9 @@
 
                     <!-- Sub-view 1.3: Resize Image (Resize Active) -->
                     <views:ResizeImageView IsVisible="{Binding IsResizeActive}" />
+
+                    <!-- Sub-view: Duplicate Finder (DuplicateFinder Active) -->
+                    <views:DuplicateFinderView IsVisible="{Binding IsDuplicateFinderActive}" />
 
                 </Grid>
             </Border>

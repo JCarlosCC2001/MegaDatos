@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -439,5 +439,19 @@ public partial class MainViewModel : ViewModelBase
 
     [ObservableProperty]
     private bool _isBatchRunning;
+
+    // ===== Duplicate Finder Operation =====
+    public ObservableCollection<DuplicateGroup> DuplicateGroups { get; } = new();
+
+    [ObservableProperty]
+    private bool _isScanningDuplicates;
+
+    [ObservableProperty]
+    private int _duplicateScanProgress;
+
+    [ObservableProperty]
+    private bool _duplicateAutoDelete = false;
+
+    partial void OnDuplicateAutoDeleteChanged(bool value) => SaveCurrentState();
 
 }

@@ -1185,4 +1185,145 @@ public partial class MainViewModel : ViewModelBase
         }
     }
 
+    [RelayCommand(AllowConcurrentExecutions = true)]
+    private async Task ScanDuplicatesAsync()
+    {
+        var filesToScan = Files.Where(f => !f.IsDirectory && 
+            (GetCategoryForExtension(f.Extension) == "Image" || GetCategoryForExtension(f.Extension) == "Raw")).ToList();
+
+        if (filesToScan.Count == 0)
+        {
+            StatusText = "No hay imágenes para escanear.";
+            return;
+        }
+
+        IsScanningDuplicates = true;
+        DuplicateScanProgress = 0;
+        DuplicateGroups.Clear();
+        StatusText = "Escaneando imágenes (Hash perceptual)...";
+
+        await Task.Run(async () =>
+        {
+            var fileHashes = new Dictionary<FileItem, ulong>();
+            int count = 0;
+
+            foreach (var file in filesToScan)
+            {
+                ulong hash = DuplicateFinderService.ComputeDHash(file.FullPath);
+                if (hash != 0) 
+                {
+                    fileHashes[file] = hash;
+                }
+                
+                count++;
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    DuplicateScanProgress = (int)((count / (double)filesToScan.Count) * 50); 
+                    StatusText = $"Calculando hashes ({count}/{filesToScan.Count})...";
+                });
+            }
+
+            var groups = new List<List<FileItem>>();
+            var processed = new HashSet<FileItem>();
+
+            int groupingCount = 0;
+            var hashesList = fileHashes.ToList();
+
+            foreach (var kvp in hashesList)
+            {
+                if (processed.Contains(kvp.Key)) continue;
+
+                var currentGroup = new List<FileItem> { kvp.Key };
+                processed.Add(kvp.Key);
+
+                foreach (var otherKvp in hashesList)
+                {
+                    if (processed.Contains(otherKvp.Key)) continue;
+
+                    int distance = DuplicateFinderService.HammingDistance(kvp.Value, otherKvp.Value);
+                    if (distance <= 5)
+                    {
+                        currentGroup.Add(otherKvp.Key);
+                        processed.Add(otherKvp.Key);
+                    }
+                }
+
+                if (currentGroup.Count > 1)
+                {
+                    groups.Add(currentGroup);
+                }
+
+                groupingCount++;
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    DuplicateScanProgress = 50 + (int)((groupingCount / (double)hashesList.Count) * 50); 
+                });
+            }
+
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                int groupId = 1;
+                foreach (var g in groups)
+                {
+                    DuplicateGroups.Add(new DuplicateGroup($"Grupo {groupId++}", g));
+                }
+
+                IsScanningDuplicates = false;
+                DuplicateScanProgress = 100;
+                StatusText = $"Escaneo completado. Se encontraron {DuplicateGroups.Count} grupos de duplicados.";
+                
+                // Si Auto Delete está activado, lanzar la eliminación automáticamente
+                if (DuplicateAutoDelete && DuplicateGroups.Count > 0)
+                {
+                    _ = DeleteDuplicatesAsync();
+                }
+            });
+        });
+    }
+
+    [RelayCommand(AllowConcurrentExecutions = true)]
+    private async Task DeleteDuplicatesAsync()
+    {
+        var toDelete = new List<DuplicateItem>();
+        foreach (var group in DuplicateGroups)
+        {
+            foreach (var item in group.Items)
+            {
+                if (item.IsSelectedForDeletion)
+                {
+                    toDelete.Add(item);
+                }
+            }
+        }
+
+        if (toDelete.Count == 0)
+        {
+            StatusText = "No hay duplicados marcados para eliminar.";
+            return;
+        }
+
+        IsProcessing = true;
+        StatusText = $"Eliminando {toDelete.Count} duplicados...";
+
+        await Task.Run(() =>
+        {
+            foreach (var item in toDelete)
+            {
+                try
+                {
+                    if (File.Exists(item.FullPath))
+                    {
+                        File.Delete(item.FullPath);
+                    }
+                }
+                catch { }
+            }
+        });
+
+        IsProcessing = false;
+        StatusText = $"{toDelete.Count} duplicados eliminados.";
+        
+        DuplicateGroups.Clear();
+        _ = ReloadFilesFromPathAsync(CurrentPath);
+    }
 }

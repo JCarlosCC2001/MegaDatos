@@ -1,0 +1,112 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MegaDatos.ViewModels"
+             xmlns:models="using:MegaDatos.Models"
+             x:Class="MegaDatos.Views.DuplicateFinderView"
+             x:DataType="vm:MainViewModel">
+    <DockPanel>
+        <TextBlock DockPanel.Dock="Top" Text="Buscar Duplicados" Classes="section-header" Margin="6,0,0,10" />
+
+        <StackPanel DockPanel.Dock="Top" Spacing="10" Margin="0,0,0,10">
+            <TextBlock Text="Busca imágenes visualmente idénticas usando Hash Perceptual (compara píxeles), sin importar el formato o nombre."
+                       FontSize="10" Foreground="{DynamicResource TextTertiaryBrush}" TextWrapping="Wrap" />
+
+            <!-- Options -->
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <CheckBox IsChecked="{Binding DuplicateAutoDelete}" Content="Eliminar automáticamente la peor calidad al terminar" FontSize="10" />
+            </StackPanel>
+
+            <Button Command="{Binding ScanDuplicatesCommand}" 
+                    Classes="action-btn" 
+                    Content="🔍 Iniciar Escaneo" 
+                    HorizontalAlignment="Stretch" 
+                    HorizontalContentAlignment="Center" 
+                    Padding="0,6" />
+
+            <ProgressBar IsVisible="{Binding IsScanningDuplicates}" 
+                         Value="{Binding DuplicateScanProgress}" 
+                         Minimum="0" Maximum="100" 
+                         Height="6" 
+                         Foreground="{DynamicResource AccentBrush}" />
+            
+            <TextBlock IsVisible="{Binding IsScanningDuplicates}" Text="{Binding StatusText}" FontSize="10" Foreground="{DynamicResource TextTertiaryBrush}" HorizontalAlignment="Center"/>
+
+            <Button Command="{Binding DeleteDuplicatesCommand}" 
+                    IsVisible="{Binding DuplicateGroups.Count}"
+                    Classes="action-btn" 
+                    Background="#ef4444"
+                    Foreground="White"
+                    Content="🗑️ Eliminar Seleccionados" 
+                    HorizontalAlignment="Stretch" 
+                    HorizontalContentAlignment="Center" 
+                    Padding="0,6" />
+        </StackPanel>
+
+        <!-- Results List -->
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding DuplicateGroups}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="models:DuplicateGroup">
+                        <Border Background="{DynamicResource BgTertiaryBrush}" 
+                                BorderBrush="{DynamicResource BorderSubtleBrush}" 
+                                BorderThickness="1" 
+                                CornerRadius="6" 
+                                Margin="0,0,0,8"
+                                Padding="8">
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="{Binding GroupTitle}" FontWeight="Bold" FontSize="10" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                
+                                <ItemsControl ItemsSource="{Binding Items}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="models:DuplicateItem">
+                                            <Grid ColumnDefinitions="Auto, *, Auto, Auto" Margin="0,2">
+                                                <!-- Checkbox (disabled if best quality) -->
+                                                <CheckBox Grid.Column="0" 
+                                                          IsChecked="{Binding IsSelectedForDeletion}" 
+                                                          IsEnabled="{Binding !IsBestQuality}"
+                                                          Margin="0,0,6,0" />
+                                                
+                                                <!-- File Name & Extension -->
+                                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Name}" FontSize="10" TextTrimming="CharacterEllipsis" MaxWidth="150" />
+                                                    <TextBlock Text="{Binding Extension}" FontSize="9" Foreground="{DynamicResource TextTertiaryBrush}" />
+                                                </StackPanel>
+                                                
+                                                <!-- Best Quality Badge -->
+                                                <Border Grid.Column="2" 
+                                                        IsVisible="{Binding IsBestQuality}"
+                                                        Background="#2010b981" 
+                                                        CornerRadius="4" 
+                                                        Padding="4,2" 
+                                                        Margin="6,0"
+                                                        VerticalAlignment="Center">
+                                                    <TextBlock Text="★ Conservar (Mejor)" FontSize="9" Foreground="#10b981" FontWeight="Bold" />
+                                                </Border>
+                                                <Border Grid.Column="2" 
+                                                        IsVisible="{Binding IsSelectedForDeletion}"
+                                                        Background="#20ef4444" 
+                                                        CornerRadius="4" 
+                                                        Padding="4,2" 
+                                                        Margin="6,0"
+                                                        VerticalAlignment="Center">
+                                                    <TextBlock Text="✕ Eliminar" FontSize="9" Foreground="#ef4444" FontWeight="Bold" />
+                                                </Border>
+                                                
+                                                <!-- Resolution & Size -->
+                                                <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Resolution}" FontSize="9" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                                    <TextBlock Text="|" FontSize="9" Foreground="{DynamicResource BorderSubtleBrush}" />
+                                                    <TextBlock Text="{Binding SizeFormatted}" FontSize="9" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>

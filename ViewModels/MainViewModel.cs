@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -33,6 +33,7 @@ public partial class MainViewModel : ViewModelBase
     public bool IsFormatActive => ActiveTool == "Format";
     public bool IsResizeActive => ActiveTool == "Resize";
     public bool IsKmzExportActive => ActiveTool == "KmzExport";
+    public bool IsDuplicateFinderActive => ActiveTool == "DuplicateFinder";
 
     partial void OnActiveToolChanged(string value)
     {
@@ -44,6 +45,7 @@ public partial class MainViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsFormatActive));
         OnPropertyChanged(nameof(IsResizeActive));
         OnPropertyChanged(nameof(IsKmzExportActive));
+        OnPropertyChanged(nameof(IsDuplicateFinderActive));
         StatusText = $"Herramienta activa: {value}";
         SaveCurrentState();
 
