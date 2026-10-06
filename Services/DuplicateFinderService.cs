@@ -28,7 +28,7 @@ public static class DuplicateFinderService
                     var rightPixel = pixels.GetPixel(x + 1, y).ToColor();
 
                     // Comparar luminosidad
-                    if (leftPixel.R > rightPixel.R)
+                    if (leftPixel != null && rightPixel != null && leftPixel.R > rightPixel.R)
                     {
                         hash |= (1UL << ((y * 8) + x));
                     }

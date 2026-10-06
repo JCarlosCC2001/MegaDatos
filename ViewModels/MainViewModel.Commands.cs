@@ -716,16 +716,25 @@ public partial class MainViewModel : ViewModelBase
                             var creationTime = File.GetCreationTime(file.FullPath);
                             var lastWriteTime = File.GetLastWriteTime(file.FullPath);
 
-                            // Si no vamos a sobreescribir el original, copiamos la imagen base al nuevo destino primero
-                            if (!overwriteOriginal)
+                            // Aseguramos que la imagen tenga un Perfil ICC (como sRGB) antes de procesarla con ExifTool
+                            // para que la herramienta del teléfono siempre tenga un perfil que rescatar.
+                            if (image.GetColorProfile() == null)
                             {
-                                File.Copy(file.FullPath, newPath, true);
+                                image.SetProfile(ImageMagick.ColorProfiles.SRGB);
                             }
-
-                            // Aplicamos ExifTool sobre el archivo de destino (newPath si es copia, file.FullPath si es original)
+                            
                             string targetToProcess = overwriteOriginal ? file.FullPath : newPath;
                             
-                            // Cerramos MagickImage antes de lanzar ExifTool si comparten el mismo archivo
+                            // Siempre escribimos la imagen a través de Magick para garantizar que el perfil de color esté incrustado
+                            // antes de que ExifTool elimine y rescate los metadatos.
+                            if (image.Format == MagickFormat.Jpeg || image.Format == MagickFormat.Pjpeg)
+                            {
+                                if (originalInterlace == Interlace.Jpeg) image.Format = MagickFormat.Pjpeg;
+                                else image.Format = MagickFormat.Jpeg;
+                            }
+                            image.Write(targetToProcess);
+
+                            // Cerramos MagickImage antes de lanzar ExifTool para liberar el candado del archivo
                             image.Dispose(); 
 
                             try
@@ -880,6 +889,7 @@ public partial class MainViewModel : ViewModelBase
                             else if (newExt == ".webp") image.Format = MagickFormat.WebP;
                             else if (newExt == ".bmp") image.Format = MagickFormat.Bmp;
                             else if (newExt == ".tiff") image.Format = MagickFormat.Tiff;
+                            else if (newExt == ".heic" || newExt == ".heif") image.Format = MagickFormat.Heic;
 
                             var creationTime = File.GetCreationTime(file.FullPath);
                             var lastWriteTime = File.GetLastWriteTime(file.FullPath);

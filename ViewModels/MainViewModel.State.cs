@@ -104,11 +104,12 @@ public partial class MainViewModel : ViewModelBase
         }
         SelectedTemplate = AvailableTemplates.FirstOrDefault();
 
-        foreach (var d in PhoneDeviceRegistry.Instance.Devices)
+        var brands = PhoneDeviceRegistry.Instance.Devices.Select(d => d.Brand).Distinct();
+        foreach (var b in brands)
         {
-            AvailablePhoneDevices.Add(d);
+            PhoneBrands.Add(b);
         }
-        SelectedPhoneDevice = AvailablePhoneDevices.FirstOrDefault();
+        SelectedPhoneBrand = PhoneBrands.FirstOrDefault();
 
         Console.WriteLine("MainViewModel: Constructor completed");
     }

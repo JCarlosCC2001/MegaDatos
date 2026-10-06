@@ -37,6 +37,25 @@ public class PhoneDeviceRegistry
 
         Register(new PhoneDeviceProfile
         {
+            Id = "iphone15",
+            Brand = "Apple",
+            ModelName = "iPhone 15",
+            ExifMake = "Apple",
+            ExifModel = "iPhone 15",
+            Software = "17.4",
+            LensMake = "Apple",
+            LensModel = "iPhone 15 back dual camera 5.96mm f/1.6",
+            FNumber = 1.6,
+            FocalLength = 5.96,
+            FocalLength35mm = 26,
+            DefaultIso = 50,
+            ExifByteOrder = "MM",
+            Description = "Cámara principal de 48 MP con lente de 26 mm f/1.6.",
+            IconGlyph = "🍏"
+        });
+
+        Register(new PhoneDeviceProfile
+        {
             Id = "iphone14",
             Brand = "Apple",
             ModelName = "iPhone 14",
@@ -51,6 +70,25 @@ public class PhoneDeviceRegistry
             DefaultIso = 50,
             ExifByteOrder = "MM",
             Description = "Cámara principal de 12 MP con apertura f/1.5 y Photonic Engine.",
+            IconGlyph = "🍏"
+        });
+
+        Register(new PhoneDeviceProfile
+        {
+            Id = "iphone13",
+            Brand = "Apple",
+            ModelName = "iPhone 13",
+            ExifMake = "Apple",
+            ExifModel = "iPhone 13",
+            Software = "15.0",
+            LensMake = "Apple",
+            LensModel = "iPhone 13 back dual camera 5.1mm f/1.6",
+            FNumber = 1.6,
+            FocalLength = 5.1,
+            FocalLength35mm = 26,
+            DefaultIso = 50,
+            ExifByteOrder = "MM",
+            Description = "Cámara principal de 12 MP con apertura f/1.6 y Sensor-shift OIS.",
             IconGlyph = "🍏"
         });
 
@@ -75,6 +113,24 @@ public class PhoneDeviceRegistry
 
         Register(new PhoneDeviceProfile
         {
+            Id = "samsung_s23ultra",
+            Brand = "Samsung",
+            ModelName = "Galaxy S23 Ultra",
+            ExifMake = "samsung",
+            ExifModel = "SM-S918B",
+            Software = "S918BXXU3BWJM",
+            LensMake = "Samsung",
+            LensModel = "Samsung ISOCELL HP2 200MP Wide Camera",
+            FNumber = 1.7,
+            FocalLength = 6.3,
+            FocalLength35mm = 23,
+            DefaultIso = 50,
+            Description = "Cámara de 200 MP con gran nivel de detalle y OIS avanzado.",
+            IconGlyph = "🌌"
+        });
+
+        Register(new PhoneDeviceProfile
+        {
             Id = "samsung_s23",
             Brand = "Samsung",
             ModelName = "Galaxy S23",
@@ -91,7 +147,43 @@ public class PhoneDeviceRegistry
             IconGlyph = "🌌"
         });
 
-        // 🟠 Xiaomi / Redmi
+        Register(new PhoneDeviceProfile
+        {
+            Id = "samsung_a54_5g",
+            Brand = "Samsung",
+            ModelName = "Galaxy A54 5G",
+            ExifMake = "samsung",
+            ExifModel = "SM-A546B",
+            Software = "A546BXXS7BWL1",
+            LensMake = "Samsung",
+            LensModel = "Samsung 50MP Wide Camera f/1.8",
+            FNumber = 1.8,
+            FocalLength = 5.54,
+            FocalLength35mm = 23,
+            DefaultIso = 50,
+            Description = "Cámara principal de 50 MP con VDIS y un ángulo OIS más amplio.",
+            IconGlyph = "🌌"
+        });
+
+        Register(new PhoneDeviceProfile
+        {
+            Id = "samsung_a34_5g",
+            Brand = "Samsung",
+            ModelName = "Galaxy A34 5G",
+            ExifMake = "samsung",
+            ExifModel = "SM-A346B",
+            Software = "A346BXXU5BWL1",
+            LensMake = "Samsung",
+            LensModel = "Samsung 48MP Wide Camera f/1.8",
+            FNumber = 1.8,
+            FocalLength = 4.65,
+            FocalLength35mm = 26,
+            DefaultIso = 50,
+            Description = "Cámara principal de 48 MP con estabilización OIS.",
+            IconGlyph = "🌌"
+        });
+
+        // 🟠 Xiaomi / Redmi / POCO
         Register(new PhoneDeviceProfile
         {
             Id = "xiaomi_14",
@@ -128,6 +220,24 @@ public class PhoneDeviceRegistry
             IconGlyph = "🟠"
         });
 
+        Register(new PhoneDeviceProfile
+        {
+            Id = "poco_f5",
+            Brand = "Xiaomi",
+            ModelName = "POCO F5",
+            ExifMake = "Xiaomi",
+            ExifModel = "23049PCD8G",
+            Software = "MIUI 14 / HyperOS",
+            LensMake = "Xiaomi",
+            LensModel = "64MP OmniVision OV64B f/1.79",
+            FNumber = 1.79,
+            FocalLength = 4.71,
+            FocalLength35mm = 25,
+            DefaultIso = 100,
+            Description = "Cámara de 64MP con estabilización dual OIS+EIS.",
+            IconGlyph = "🟠"
+        });
+
         // 🔵 Google Pixel
         Register(new PhoneDeviceProfile
         {
@@ -144,6 +254,24 @@ public class PhoneDeviceRegistry
             FocalLength35mm = 25,
             DefaultIso = 40,
             Description = "Cámara Octa PD de 50 MP con procesamiento computacional Google Tensor.",
+            IconGlyph = "🔵"
+        });
+
+        Register(new PhoneDeviceProfile
+        {
+            Id = "pixel_7a",
+            Brand = "Google",
+            ModelName = "Pixel 7a",
+            ExifMake = "Google",
+            ExifModel = "Pixel 7a",
+            Software = "TQ3A.230805.001",
+            LensMake = "Google",
+            LensModel = "Pixel 7a back camera 5.43mm f/1.89",
+            FNumber = 1.89,
+            FocalLength = 5.43,
+            FocalLength35mm = 26,
+            DefaultIso = 44,
+            Description = "Sensor de 64MP con Quad PD y Super Res Zoom.",
             IconGlyph = "🔵"
         });
 
@@ -164,6 +292,81 @@ public class PhoneDeviceRegistry
             DefaultIso = 100,
             Description = "Cámara de 50 MP con gran apertura f/1.4 y enfoque instantáneo.",
             IconGlyph = "🟣"
+        });
+
+        Register(new PhoneDeviceProfile
+        {
+            Id = "motorola_g84",
+            Brand = "Motorola",
+            ModelName = "Moto G84 5G",
+            ExifMake = "motorola",
+            ExifModel = "moto g84 5g",
+            Software = "T1TCS33.105-30-2",
+            LensMake = "Motorola",
+            LensModel = "50MP 1/1.5\" f/1.88 OIS",
+            FNumber = 1.88,
+            FocalLength = 5.56,
+            FocalLength35mm = 24,
+            DefaultIso = 100,
+            Description = "Cámara de 50MP con estabilización óptica OIS y tecnología Ultra Pixel.",
+            IconGlyph = "🟣"
+        });
+
+        // 🔴 Huawei
+        Register(new PhoneDeviceProfile
+        {
+            Id = "huawei_p60pro",
+            Brand = "Huawei",
+            ModelName = "P60 Pro",
+            ExifMake = "HUAWEI",
+            ExifModel = "MNA-LX9",
+            Software = "EMUI 13.1.0",
+            LensMake = "Huawei",
+            LensModel = "48MP Ultra Lighting Camera f/1.4-f/4.0",
+            FNumber = 1.4,
+            FocalLength = 5.7,
+            FocalLength35mm = 25,
+            DefaultIso = 50,
+            Description = "Cámara XMAGE con apertura física autoajustable f/1.4 - f/4.0.",
+            IconGlyph = "🔴"
+        });
+
+        // 🟢 Oppo
+        Register(new PhoneDeviceProfile
+        {
+            Id = "oppo_findx6pro",
+            Brand = "Oppo",
+            ModelName = "Find X6 Pro",
+            ExifMake = "OPPO",
+            ExifModel = "PGEM10",
+            Software = "ColorOS 13.1",
+            LensMake = "Hasselblad",
+            LensModel = "50MP 1-inch IMX989 f/1.8",
+            FNumber = 1.8,
+            FocalLength = 8.7,
+            FocalLength35mm = 23,
+            DefaultIso = 100,
+            Description = "Sensor principal de 1 pulgada calibrado por Hasselblad.",
+            IconGlyph = "🟢"
+        });
+
+        // 🟡 Sony
+        Register(new PhoneDeviceProfile
+        {
+            Id = "sony_xperia1v",
+            Brand = "Sony",
+            ModelName = "Xperia 1 V",
+            ExifMake = "Sony",
+            ExifModel = "XQ-DQ54",
+            Software = "67.0.A.4.22",
+            LensMake = "Zeiss",
+            LensModel = "48MP Exmor T for mobile f/1.9",
+            FNumber = 1.9,
+            FocalLength = 6.1,
+            FocalLength35mm = 24,
+            DefaultIso = 64,
+            Description = "Sensor de 2 capas apiladas Exmor T con óptica Zeiss.",
+            IconGlyph = "🟡"
         });
     }
 

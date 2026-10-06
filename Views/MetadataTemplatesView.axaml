@@ -65,6 +65,21 @@
                 </StackPanel>
             </Border>
 
+            <!-- Opciones específicas de la plantilla -->
+            <ContentControl Content="{Binding SelectedTemplate}" IsVisible="{Binding IsTemplateActiveSelected}">
+                <ContentControl.DataTemplates>
+                    <DataTemplate DataType="templates:TimeStampTemplate">
+                        <StackPanel Spacing="4" Margin="0,5,0,5">
+                            <TextBlock Text="Descripción de la imagen (ImageDescription)" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" />
+                            <TextBox Text="{Binding ImageDescription}" 
+                                     Classes="meta-input" 
+                                     FontSize="11" 
+                                     Watermark="Opcional. Ej: Inspección de daños..." />
+                        </StackPanel>
+                    </DataTemplate>
+                </ContentControl.DataTemplates>
+            </ContentControl>
+
             <StackPanel Spacing="6" Margin="2,0" IsVisible="{Binding IsTemplateActiveSelected}">
                 <CheckBox Content="Crear copia .bak al reemplazar" IsChecked="{Binding BatchBackupEnabled}" FontSize="10" Margin="0,4,0,0" />
             </StackPanel>

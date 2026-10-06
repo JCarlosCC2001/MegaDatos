@@ -113,7 +113,7 @@ public static class GpsGeneratorService
         int lonMin = (int)lonMinTotal;
         double lonSec = (lonMinTotal - lonMin) * 60;
 
-        return $"{latDeg}° {latMin}' {latSec:F2}\" {latRef}, {lonDeg}° {lonMin}' {lonSec:F2}\" {lonRef}";
+        return $"{latDeg}° {latMin}' {latSec.ToString("F2", CultureInfo.InvariantCulture)}\" {latRef}, {lonDeg}° {lonMin}' {lonSec.ToString("F2", CultureInfo.InvariantCulture)}\" {lonRef}";
     }
 
     /// <summary>
@@ -155,19 +155,8 @@ public static class GpsGeneratorService
             new Rational(lonSecNumerator, 100)
         });
 
-        // Altitud
-        if (altitude.HasValue)
-        {
-            double alt = altitude.Value;
-            byte altRef = (byte)(alt >= 0 ? 0 : 1);
-            uint altNumerator = (uint)Math.Round(Math.Abs(alt) * 100);
-
-            exif.SetValue(ExifTag.GPSAltitudeRef, altRef);
-            exif.SetValue(ExifTag.GPSAltitude, new Rational(altNumerator, 100));
-        }
-
-        // Version ID
-        exif.SetValue(ExifTag.GPSVersionID, new byte[] { 2, 3, 0, 0 });
+        // A petición del usuario, SOLO se aplican los datos de Latitud y Longitud con sus referencias.
+        // No se aplica GPSAltitude, GPSAltitudeRef ni GPSVersionID en este punto.
 
         image.SetProfile(exif);
     }

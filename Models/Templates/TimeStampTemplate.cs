@@ -12,12 +12,14 @@ public class TimeStampTemplate : IMetadataTemplate
 {
     public string Id => "TimeStamp";
     public string Name => "Timestamp Camera (Móvil)";
-    public string Description => "Simula fotografías capturadas con la aplicación móvil 'Timestamp Camera'. Incrusta la firma 'In Timestamp Camera', sincronización de marcas de tiempo y coordenadas GPS.";
+    public string Description => "Simula fotografías capturadas con la aplicación móvil 'Timestamp Camera'. Incrusta la firma 'Timestamp Camera', sincronización de marcas de tiempo y coordenadas GPS.";
     public string IconGlyph => "⏱️";
     public string Category => "Cámara Móvil & Peritaje";
     public string PreservesSummary => "Parámetros ópticos de cámara (Make, Model, apertura, ISO, distancia focal) y coordenadas GPS.";
     public string RemovesSummary => "Perfiles pesados de edición de escritorio (XMP, IPTC de software externo).";
-    public string InjectsSummary => "Software: 'In Timestamp Camera' y fechas sincronizadas (DateTimeOriginal, DateTimeDigitized, DateTime).";
+    public string InjectsSummary => "Software: 'Timestamp Camera' y fechas sincronizadas (DateTimeOriginal, DateTimeDigitized, DateTime).";
+
+    public string ImageDescription { get; set; } = string.Empty;
 
     public TemplateComplianceResult ValidateCompliance(FileItem file)
     {
@@ -77,7 +79,7 @@ public class TimeStampTemplate : IMetadataTemplate
                 result.State = ComplianceState.Incomplete;
                 result.SummaryMessage = "Falta la firma de software de Timestamp Camera";
                 result.Details.Add($"Software actual: {(string.IsNullOrEmpty(software) ? "Ninguno" : software)}");
-                result.Details.Add("Se requiere 'In Timestamp Camera'.");
+                result.Details.Add("Se requiere 'Timestamp Camera'.");
                 return result;
             }
 
@@ -135,27 +137,24 @@ public class TimeStampTemplate : IMetadataTemplate
             "-overwrite_original",
             "-xmp=",
             "-iptc=",
-            "-EXIF:Software=In Timestamp Camera",
+            "-jfif:all=", // Eliminar bloque JFIF (APP0) típico de imágenes re-guardadas o web
+            "-EXIF:XResolution=", // Borrar XResolution
+            "-EXIF:YResolution=", // Borrar YResolution
+            "-EXIF:ResolutionUnit=", // Borrar unidad de resolución
+            "-EXIF:YCbCrPositioning=", // Borrar YCbCrPositioning
+            // Se omiten ExifImageWidth y ExifImageHeight para mantener ExifIFD limpio y estricto
+            "-IFD0:ImageWidth<ImageWidth", // Bloque IFD0 explícito
+            "-IFD0:ImageHeight<ImageHeight", // Bloque IFD0 explícito
+            "-EXIF:Software=Timestamp Camera",
             "-exifbyteorder=MM",
             
-            // Borrar datos de hardware de cámara para dejarlos vacíos
-            "-EXIF:Make=",
-            "-EXIF:Model=",
-            "-EXIF:LensMake=",
-            "-EXIF:LensModel=",
-            "-EXIF:FNumber=",
-            "-EXIF:FocalLength=",
-            "-EXIF:FocalLengthIn35mmFormat=",
-            "-EXIF:ISO=",
-            "-EXIF:ExposureTime=",
-            "-EXIF:ExposureProgram=",
-            "-EXIF:MeteringMode=",
-            "-EXIF:Flash=",
-            "-EXIF:WhiteBalance=",
-            "-EXIF:ColorSpace=",
-            "-EXIF:SensingMethod=",
-            "-EXIF:SceneCaptureType="
+            // Se preservan los datos de hardware de cámara originales
         };
+
+        if (!string.IsNullOrWhiteSpace(ImageDescription))
+        {
+            args.Add($"-EXIF:ImageDescription={ImageDescription}");
+        }
 
         DateTime timestamp = ExtractDateFromFilenameOrFile(file);
         string dtStr = timestamp.ToString("yyyy:MM:dd HH:mm:ss");
@@ -163,6 +162,20 @@ public class TimeStampTemplate : IMetadataTemplate
         args.Add($"-EXIF:DateTimeOriginal={dtStr}");
         args.Add($"-EXIF:CreateDate={dtStr}"); // This is DateTimeDigitized in EXIF
         args.Add($"-EXIF:ModifyDate={dtStr}"); // This is DateTime in EXIF
+
+        try
+        {
+            using var img = new MagickImage(file.FullPath);
+            if (img.Width >= img.Height)
+            {
+                args.Add("-IFD0:Orientation=Horizontal (normal)");
+            }
+            else
+            {
+                args.Add("-IFD0:Orientation=Rotate 90 CW");
+            }
+        }
+        catch { }
 
         args.Add(targetPath);
 

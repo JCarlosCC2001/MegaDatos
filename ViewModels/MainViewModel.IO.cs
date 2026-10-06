@@ -128,11 +128,11 @@ public partial class MainViewModel : ViewModelBase
                             double lonDec = lonD + (lonM / 60.0) + (lonS / 3600.0);
                             if (lonRef.Equals("W", StringComparison.OrdinalIgnoreCase)) lonDec = -lonDec;
 
-                            gpsDec = $"{latDec:F6}, {lonDec:F6}";
+                            gpsDec = $"{latDec.ToString("F6", CultureInfo.InvariantCulture)}, {lonDec.ToString("F6", CultureInfo.InvariantCulture)}";
                             
                             string latDir = latDec >= 0 ? "N" : "S";
                             string lonDir = lonDec >= 0 ? "E" : "W";
-                            gpsDMS = $"{latD}° {latM}' {latS:F2}\" {latDir}, {lonD}° {lonM}' {lonS:F2}\" {lonDir}";
+                            gpsDMS = $"{latD}° {latM}' {latS.ToString("F2", CultureInfo.InvariantCulture)}\" {latDir}, {lonD}° {lonM}' {lonS.ToString("F2", CultureInfo.InvariantCulture)}\" {lonDir}";
                         }
                     }
                 }
@@ -254,7 +254,7 @@ public partial class MainViewModel : ViewModelBase
     private void OnFileSystemChanged(object sender, FileSystemEventArgs e)
     {
         // Ignorar eventos fuera del directorio actual
-        string dir = Path.GetDirectoryName(e.FullPath);
+        string? dir = Path.GetDirectoryName(e.FullPath);
         if (!string.Equals(dir, CurrentPath, StringComparison.OrdinalIgnoreCase)) return;
 
         Dispatcher.UIThread.InvokeAsync(() => 
@@ -484,8 +484,12 @@ public partial class MainViewModel : ViewModelBase
 
                 if (!string.IsNullOrEmpty(state.SelectedPhoneDeviceId))
                 {
-                    var foundPhone = AvailablePhoneDevices.FirstOrDefault(d => string.Equals(d.Id, state.SelectedPhoneDeviceId, StringComparison.OrdinalIgnoreCase));
-                    if (foundPhone != null) SelectedPhoneDevice = foundPhone;
+                    var foundPhone = MegaDatos.Models.Devices.PhoneDeviceRegistry.Instance.Devices.FirstOrDefault(d => string.Equals(d.Id, state.SelectedPhoneDeviceId, StringComparison.OrdinalIgnoreCase));
+                    if (foundPhone != null)
+                    {
+                        SelectedPhoneBrand = foundPhone.Brand;
+                        SelectedPhoneDevice = foundPhone;
+                    }
                 }
 
                 if (!string.IsNullOrEmpty(state.LastDirectory) && Directory.Exists(state.LastDirectory))

@@ -172,24 +172,21 @@ public class PhoneDeviceProfile
 
         Action addPhoneTags = () =>
         {
+            // Borrar absolutamente todo de ExifIFD para garantizar que SOLO queden los que vamos a inyectar a continuación
+            args.Add("-ExifIFD:all=");
+
             args.Add($"-EXIF:Make={ExifMake}");
             args.Add($"-EXIF:Model={ExifModel}");
             if (!string.IsNullOrEmpty(Software)) args.Add($"-EXIF:Software={Software}");
-            if (!string.IsNullOrEmpty(LensMake)) args.Add($"-EXIF:LensMake={LensMake}");
-            if (!string.IsNullOrEmpty(LensModel)) args.Add($"-EXIF:LensModel={LensModel}");
-
             args.Add($"-EXIF:FNumber={FNumber}");
             args.Add($"-EXIF:FocalLength={FocalLength}");
-            args.Add($"-EXIF:FocalLengthIn35mmFormat={FocalLength35mm}");
             args.Add($"-EXIF:ISO={DefaultIso}");
             args.Add($"-EXIF:ExposureTime={DefaultExposureTime}");
-            args.Add($"-EXIF:ExposureProgram=2");
-            args.Add($"-EXIF:MeteringMode=5");
-            args.Add($"-EXIF:Flash=16");
-            args.Add($"-EXIF:WhiteBalance=0");
-            args.Add($"-EXIF:ColorSpace=1");
-            args.Add($"-EXIF:SensingMethod=2");
-            args.Add($"-EXIF:SceneCaptureType=0");
+            args.Add($"-EXIF:ExposureProgram#=2");
+            args.Add($"-EXIF:MeteringMode#=5");
+            args.Add($"-EXIF:Flash#=16");
+            args.Add($"-EXIF:WhiteBalance#=0");
+            args.Add($"-EXIF:LightSource#=0"); // Unknown
 
             DateTime ts = ExtractDate(file);
             string dtStr = ts.ToString("yyyy:MM:dd HH:mm:ss");
@@ -214,15 +211,15 @@ public class PhoneDeviceProfile
         }
         else
         {
-            // Modo "Rellenar faltantes": Preserva todo el original (software, IPTC, XMP), solo rellena campos vacíos de hardware
+            // Modo "Preservar": Preserva todo el original (software, IPTC, XMP), pero el hardware del teléfono sobreescribe el original
             
-            // 1. Agregamos los datos del teléfono (actúan como valores por defecto/fallback)
-            addPhoneTags();
-
-            // 2. Copiamos TODOS los metadatos originales encima (los originales sobreescribirán los fallbacks de arriba)
+            // 1. Copiamos TODOS los metadatos originales primero
             args.Add("-tagsfromfile");
             args.Add("@");
             args.Add("-all:all");
+
+            // 2. Agregamos los datos del teléfono (sobreescribirán los datos de hardware originales copiados)
+            addPhoneTags();
 
             // 3. Si no desea preservar GPS, lo borramos explícitamente al final
             if (!preserveGps)
@@ -230,6 +227,22 @@ public class PhoneDeviceProfile
                 args.Add("-gps:all=");
             }
         }
+
+        // Rescatar datos originales importantes para no sobrescribirlos o perderlos.
+        // Esto evita que al usar "Sobrescribir Todo", se pierda el trabajo previo de una plantilla 
+        // (como la Orientación, Descripción o las Dimensiones exactas inyectadas previamente).
+        args.Add("-tagsfromfile");
+        args.Add("@");
+        args.Add("-EXIF:Software");
+        args.Add("-IFD0:Orientation");
+        args.Add("-IFD0:ImageWidth");
+        args.Add("-IFD0:ImageHeight");
+        args.Add("-EXIF:ImageDescription");
+        args.Add("-icc_profile"); // Conservar el perfil de color original (ICC-header, ICC_Profile)
+
+        // Eliminar campos explícitamente a petición del usuario
+        args.Add("-EXIF:YCbCrSubSampling=");
+        args.Add("-EXIF:YCbCrPositioning=");
 
         args.Add("-unsafe");
         args.Add($"-ExifByteOrder={ExifByteOrder}");

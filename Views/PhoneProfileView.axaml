@@ -19,25 +19,34 @@
             </Border>
 
             <!-- Phone selector -->
-            <StackPanel Spacing="4">
-                <TextBlock Text="Seleccionar Modelo de Celular" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" />
-                <ComboBox ItemsSource="{Binding AvailablePhoneDevices}" 
+            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" Margin="0,0,0,4">
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Marca" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,4" />
+                <ComboBox Grid.Row="1" Grid.Column="0" ItemsSource="{Binding PhoneBrands}" 
+                          SelectedItem="{Binding SelectedPhoneBrand}" 
+                          Classes="meta-input" 
+                          Padding="4,2" 
+                          MinHeight="26" 
+                          Margin="0,0,4,0"
+                          HorizontalAlignment="Stretch" />
+
+                <TextBlock Grid.Row="0" Grid.Column="1" Text="Modelo" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" Margin="4,0,0,4" />
+                <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding FilteredPhoneDevices}" 
                           SelectedItem="{Binding SelectedPhoneDevice}" 
                           Classes="meta-input" 
                           Padding="4,2" 
                           MinHeight="26" 
+                          Margin="4,0,0,0"
                           HorizontalAlignment="Stretch">
                     <ComboBox.ItemTemplate>
                         <DataTemplate x:DataType="devices:PhoneDeviceProfile">
                             <StackPanel Orientation="Horizontal" Spacing="6">
                                 <TextBlock Text="{Binding IconGlyph}" FontSize="11" VerticalAlignment="Center" />
-                                <TextBlock Text="{Binding Brand}" FontSize="10" FontWeight="Bold" VerticalAlignment="Center" />
                                 <TextBlock Text="{Binding ModelName}" FontSize="10" VerticalAlignment="Center" />
                             </StackPanel>
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
-            </StackPanel>
+            </Grid>
 
             <!-- Phone Specs Card -->
             <Border Background="{DynamicResource BgTertiaryBrush}" CornerRadius="6" Padding="10" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1">

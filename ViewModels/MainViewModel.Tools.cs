@@ -76,7 +76,27 @@ public partial class MainViewModel : ViewModelBase
     }
 
     // ===== Phone Device Profiles Tool =====
-    public ObservableCollection<PhoneDeviceProfile> AvailablePhoneDevices { get; } = new();
+    public ObservableCollection<string> PhoneBrands { get; } = new();
+
+    [ObservableProperty]
+    private string? _selectedPhoneBrand;
+
+    partial void OnSelectedPhoneBrandChanged(string? value)
+    {
+        FilteredPhoneDevices.Clear();
+        if (value != null)
+        {
+            var filtered = PhoneDeviceRegistry.Instance.Devices.Where(d => d.Brand == value);
+            foreach (var d in filtered)
+            {
+                FilteredPhoneDevices.Add(d);
+            }
+            SelectedPhoneDevice = FilteredPhoneDevices.FirstOrDefault();
+        }
+        SaveCurrentState();
+    }
+
+    public ObservableCollection<PhoneDeviceProfile> FilteredPhoneDevices { get; } = new();
 
     [ObservableProperty]
     private PhoneDeviceProfile? _selectedPhoneDevice;
@@ -274,7 +294,7 @@ public partial class MainViewModel : ViewModelBase
 
     public ObservableCollection<string> SupportedFormats { get; } = new();
 
-    private static readonly string[] ImageFormats = { "JPG", "JPEG", "PNG", "WEBP", "BMP", "TIFF", "GIF", "ICO" };
+    private static readonly string[] ImageFormats = { "JPG", "JPEG", "PNG", "WEBP", "BMP", "TIFF", "GIF", "ICO", "HEIC" };
     private static readonly string[] RawFormats = { "JPG", "JPEG", "PNG", "TIFF" };
     private static readonly string[] VideoFormats = { "MP4", "MKV", "AVI", "MOV" };
     private static readonly string[] AudioFormats = { "MP3", "WAV", "FLAC", "OGG", "AAC" };
@@ -284,7 +304,7 @@ public partial class MainViewModel : ViewModelBase
     {
         return ext.ToLowerInvariant() switch
         {
-            ".jpg" or ".jpeg" or ".png" or ".tiff" or ".bmp" or ".webp" or ".gif" => "Image",
+            ".jpg" or ".jpeg" or ".png" or ".tiff" or ".bmp" or ".webp" or ".gif" or ".heic" or ".heif" => "Image",
             ".cr2" or ".nef" or ".arw" or ".dng" or ".raw" => "Raw",
             ".mp4" or ".mov" or ".avi" or ".mkv" or ".wmv" or ".flv" or ".webm" => "Video",
             ".mp3" or ".flac" or ".wav" or ".aac" or ".ogg" or ".m4a" => "Audio",
